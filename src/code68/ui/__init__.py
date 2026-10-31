@@ -5,3 +5,4 @@ from code68.ui.renderer import TerminalRenderer
 from code68.ui.terminal import TerminalUI
 
 __all__ = ["TerminalRenderer", "TerminalUI", "UIComponents"]
+

@@ -80,3 +80,4 @@ class ConversationHistory:
         pruned_count = len(older_messages)
         self.messages = new_messages
         return pruned_count
+

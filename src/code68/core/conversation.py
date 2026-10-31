@@ -50,3 +50,4 @@ class Conversation:
     def compact(self) -> int:
         """Compact conversation history."""
         return self.history.compact()
+

@@ -111,3 +111,4 @@ class ChatCompletionResponse(BaseModel):
     message: Message
     finish_reason: Optional[str] = None
     usage: Optional[UsageInfo] = None
+

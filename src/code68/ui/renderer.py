@@ -101,3 +101,4 @@ class TerminalRenderer:
     def render_success(self, message: str) -> None:
         """Render a success message."""
         self.console.print(f"[bold green]Success:[/bold green] {message}")
+

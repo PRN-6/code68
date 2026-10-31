@@ -179,3 +179,4 @@ class FilesystemTools:
             return f"Successfully deleted file '{target.relative_to(self.workspace_root)}'."
         except Exception as e:
             return f"Error deleting file '{path}': {e}"
+

@@ -89,3 +89,4 @@ class ContextRetriever:
 
         candidates.sort(key=lambda x: x[0], reverse=True)
         return [c[1] for c in candidates[:top_k]]
+

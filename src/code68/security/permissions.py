@@ -80,3 +80,4 @@ class SecurityManager:
         if self.approval_callback is not None:
             return self.approval_callback(prompt, details)
         return False
+

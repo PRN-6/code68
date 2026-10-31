@@ -68,3 +68,4 @@ def test_permission_levels():
 
     assert ea_manager.check_permission(ActionCategory.EDIT, "write file")
     assert len(approvals) == 1
+

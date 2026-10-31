@@ -56,3 +56,4 @@ def test_scanner_and_retrieval(temp_workspace):
     tree = retriever.generate_project_tree()
     assert "sample.py" in tree
     assert "README.md" in tree
+

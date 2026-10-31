@@ -122,3 +122,4 @@ class ToolRegistry:
                 f.write(json.dumps(entry) + "\n")
         except Exception as e:
             logger.warning("Failed to write to audit log: %s", e)
+

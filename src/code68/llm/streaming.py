@@ -90,3 +90,4 @@ class StreamAccumulator:
             content=full_content,
             tool_calls=built_tool_calls if built_tool_calls else None,
         )
+

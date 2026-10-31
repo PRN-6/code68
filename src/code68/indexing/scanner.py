@@ -149,3 +149,4 @@ class CodebaseScanner:
             meta.project_type = "General Project"
 
         return meta
+

@@ -31,3 +31,4 @@ def test_cli_doctor():
     assert result.exit_code == 0
     assert "Python Runtime" in result.stdout
     assert "Git Version Control" in result.stdout
+

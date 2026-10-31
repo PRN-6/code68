@@ -2,6 +2,7 @@
 
 Runs Qwen2.5-Coder-7B-Instruct (4-bit quantized) on 2x NVIDIA Tesla T4 GPUs
 and exposes a secure, authenticated OpenAI-compatible API.
+Supports automatic local fallback mode when running on non-GPU machines for testing.
 """
 
 import os
@@ -15,7 +16,6 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import uvicorn
-import torch
 
 # Configuration from environment variables
 API_KEY = os.getenv("CODE68_API_KEY", "code68-secret-key")
@@ -66,34 +66,59 @@ class ChatCompletionRequest(BaseModel):
 # Model globals
 model = None
 tokenizer = None
+is_mock_mode = False
 
 
 def load_model():
-    global model, tokenizer
-    print(f"Loading {MODEL_ID} in 4-bit on available GPUs...")
-    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+    global model, tokenizer, is_mock_mode
+    try:
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.float16,
-        bnb_4bit_use_double_quant=True,
-    )
+        if not torch.cuda.is_available():
+            print("[INFO] No NVIDIA GPU detected. Switching to local mock/developer mode.")
+            is_mock_mode = True
+            return
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=True)
-    model = AutoModelForCausalLM.from_pretrained(
-        MODEL_ID,
-        quantization_config=bnb_config,
-        device_map="auto",
-        torch_dtype=torch.float16,
-        trust_remote_code=True,
-    )
-    print("Model loaded successfully!")
+        print(f"Loading {MODEL_ID} in 4-bit on available GPUs...")
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.float16,
+            bnb_4bit_use_double_quant=True,
+        )
+
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained(
+            MODEL_ID,
+            quantization_config=bnb_config,
+            device_map="auto",
+            torch_dtype=torch.float16,
+            trust_remote_code=True,
+        )
+        print("[INFO] Model loaded successfully onto GPU!")
+    except ImportError as e:
+        print(f"[INFO] PyTorch/Transformers not installed ({e}). Running in local mock/developer mode.")
+        is_mock_mode = True
+    except Exception as e:
+        print(f"[WARNING] Error loading model: {e}. Falling back to local mock mode.")
+        is_mock_mode = True
 
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "gpu_available": torch.cuda.is_available(), "model": MODEL_ID}
+    gpu_avail = False
+    try:
+        import torch
+        gpu_avail = torch.cuda.is_available()
+    except Exception:
+        pass
+    return {
+        "status": "ok",
+        "gpu_available": gpu_avail,
+        "model": MODEL_ID,
+        "mode": "gpu_inference" if (model is not None and not is_mock_mode) else "mock_developer_mode",
+    }
 
 
 @app.get("/v1/models")
@@ -113,10 +138,68 @@ def list_models(auth: str = Depends(verify_api_key)):
 
 @app.post("/v1/chat/completions")
 async def chat_completions(req: ChatCompletionRequest, auth: str = Depends(verify_api_key)):
-    if tokenizer is None or model is None:
-        raise HTTPException(status_code=503, detail="Model is still loading")
+    request_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
 
-    # Format conversation messages using Qwen chat template
+    # 1. Mock developer mode (when testing locally without GPU)
+    if is_mock_mode or model is None:
+        last_user_msg = next((m.content for m in reversed(req.messages) if m.role == "user"), "")
+        mock_response = (
+            f"[Local Mock Inference Server] Successfully received request.\n\n"
+            f"Your instruction was: '{last_user_msg}'\n\n"
+            f"When deployed on Kaggle with 2x NVIDIA Tesla T4 GPUs, this server streams outputs directly "
+            f"from '{MODEL_ID}' (4-bit quantized)."
+        )
+
+        if req.stream:
+            async def mock_stream_generator():
+                words = mock_response.split(" ")
+                for i, word in enumerate(words):
+                    chunk_text = word + (" " if i < len(words) - 1 else "")
+                    chunk = {
+                        "id": request_id,
+                        "object": "chat.completion.chunk",
+                        "created": int(time.time()),
+                        "model": req.model,
+                        "choices": [
+                            {
+                                "index": 0,
+                                "delta": {"content": chunk_text},
+                                "finish_reason": None,
+                            }
+                        ],
+                    }
+                    yield f"data: {json.dumps(chunk)}\n\n"
+                    await asyncio.sleep(0.04)
+
+                end_chunk = {
+                    "id": request_id,
+                    "object": "chat.completion.chunk",
+                    "created": int(time.time()),
+                    "model": req.model,
+                    "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
+                }
+                yield f"data: {json.dumps(end_chunk)}\n\n"
+                yield "data: [DONE]\n\n"
+
+            return StreamingResponse(mock_stream_generator(), media_type="text/event-stream")
+        else:
+            return {
+                "id": request_id,
+                "object": "chat.completion",
+                "created": int(time.time()),
+                "model": req.model,
+                "choices": [
+                    {
+                        "index": 0,
+                        "message": {"role": "assistant", "content": mock_response},
+                        "finish_reason": "stop",
+                    }
+                ],
+            }
+
+    # 2. Real GPU Model Inference
+    import torch
+
     hf_messages = []
     for m in req.messages:
         d = {"role": m.role, "content": m.content or ""}
@@ -128,7 +211,6 @@ async def chat_completions(req: ChatCompletionRequest, auth: str = Depends(verif
             d["tool_calls"] = m.tool_calls
         hf_messages.append(d)
 
-    # Apply chat template with tools if available
     try:
         if req.tools and hasattr(tokenizer, "apply_chat_template"):
             text = tokenizer.apply_chat_template(
@@ -143,13 +225,10 @@ async def chat_completions(req: ChatCompletionRequest, auth: str = Depends(verif
                 tokenize=False,
                 add_generation_prompt=True,
             )
-    except Exception as e:
-        # Fallback formatting
+    except Exception:
         text = "\n".join(f"{m['role'].upper()}: {m['content']}" for m in hf_messages) + "\nASSISTANT: "
 
     model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
-
-    request_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
 
     if req.stream:
         async def event_generator():
@@ -185,7 +264,6 @@ async def chat_completions(req: ChatCompletionRequest, auth: str = Depends(verif
                 yield f"data: {json.dumps(chunk)}\n\n"
                 await asyncio.sleep(0.001)
 
-            # End chunk
             end_chunk = {
                 "id": request_id,
                 "object": "chat.completion.chunk",
@@ -199,7 +277,6 @@ async def chat_completions(req: ChatCompletionRequest, auth: str = Depends(verif
         return StreamingResponse(event_generator(), media_type="text/event-stream")
 
     else:
-        # Non-streaming response
         generated_ids = model.generate(
             **model_inputs,
             max_new_tokens=req.max_tokens or 2048,
@@ -228,22 +305,27 @@ async def chat_completions(req: ChatCompletionRequest, auth: str = Depends(verif
 
 
 if __name__ == "__main__":
-    try:
-        load_model()
-    except Exception as e:
-        print(f"Warning: Could not preload model: {e}")
+    load_model()
+
+    print("=" * 60)
+    print("CODE68 CLOUD INFERENCE SERVER")
+    print(f"Listening on: http://localhost:{PORT}")
+    print(f"API Key: {API_KEY}")
+    print(f"Model: {MODEL_ID}")
+    print(f"Mode: {'GPU Inference (2x T4)' if (model is not None and not is_mock_mode) else 'Developer Mode (Local)'}")
+    print("=" * 60)
 
     # Optionally launch cloudflare tunnel if pycloudflared installed
     try:
         from pycloudflared import try_cloudflare
         tunnel_url = try_cloudflare(port=PORT).tunnel
         print("=" * 60)
-        print(f"CODE68 PUBLIC TUNNEL URL: {tunnel_url}/v1")
+        print(f"PUBLIC TUNNEL URL: {tunnel_url}/v1")
         print(f"Set this in your local terminal:")
         print(f"export CODE68_BASE_URL={tunnel_url}/v1")
         print(f"export CODE68_API_KEY={API_KEY}")
         print("=" * 60)
     except Exception:
-        print("PyCloudflared not available. Use ngrok or local port forwarding.")
+        pass
 
     uvicorn.run(app, host=HOST, port=PORT)

@@ -53,3 +53,4 @@ class LoopDetector:
             return True, f"Detected {consecutive_identical} identical consecutive calls to '{last.tool_name}'"
 
         return False, ""
+

@@ -96,3 +96,4 @@ class IgnoreFilter:
                 return True
 
         return False
+

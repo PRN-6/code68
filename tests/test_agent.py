@@ -127,3 +127,4 @@ def test_session_manager(temp_workspace):
     sessions = sm.list_sessions()
     assert len(sessions) >= 1
     assert sessions[0]["session_id"] == "test_sess"
+

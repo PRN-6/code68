@@ -59,3 +59,4 @@ class BaseLLMProvider(ABC):
     def get_capabilities(self) -> ProviderCapabilities:
         """Return provider capabilities."""
         pass
+

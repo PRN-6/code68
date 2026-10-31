@@ -36,3 +36,4 @@ class ExecutionPlan(BaseModel):
             status = "✓" if s.completed else "○"
             lines.append(f"  [{status}] Step {s.step_number}: {s.description}")
         return "\n".join(lines)
+

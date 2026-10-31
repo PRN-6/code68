@@ -92,3 +92,4 @@ class SymbolExtractor:
         ret = f" -> {ast.unparse(node.returns)}" if node.returns else ""
         prefix = "async def " if isinstance(node, ast.AsyncFunctionDef) else "def "
         return f"{prefix}{node.name}({', '.join(args_list)}){ret}"
+

@@ -238,3 +238,4 @@ def build_default_tool_registry(
     )
 
     return registry
+

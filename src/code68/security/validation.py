@@ -72,3 +72,4 @@ def check_prompt_injection(content: str) -> Optional[str]:
         if re.search(pattern, content, re.IGNORECASE):
             return f"Suspected prompt injection pattern detected: '{pattern}'"
     return None
+

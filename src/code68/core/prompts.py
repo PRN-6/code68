@@ -27,3 +27,4 @@ def get_system_prompt(workspace_summary: str = "") -> str:
         return CODE68_SYSTEM_PROMPT
 
     return f"{CODE68_SYSTEM_PROMPT}\n\nWORKSPACE CONTEXT:\n{workspace_summary}"
+

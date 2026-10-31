@@ -59,3 +59,4 @@ Because Code68 uses standard OpenAI-compatible endpoints, you can substitute Kag
 - **vLLM / Ollama** on local or cloud GPUs
 - **OpenRouter / DeepInfra / Together AI**
 - **RunPod / Lambda Labs / Vast.ai**
+

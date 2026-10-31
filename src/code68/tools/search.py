@@ -185,3 +185,4 @@ class SearchTools:
             return f"Found {len(symbols)} symbol(s) matching '{name}':\n" + "\n".join(symbols)
         except Exception as e:
             return f"Error searching symbols: {e}"
+

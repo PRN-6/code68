@@ -108,3 +108,4 @@ def test_provider_factory():
     prov = get_llm_provider(cfg)
     assert isinstance(prov, OpenAICompatibleProvider)
     assert prov.base_url == "http://test:8000/v1"
+

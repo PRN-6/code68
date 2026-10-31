@@ -39,3 +39,4 @@ class UIComponents:
             return Prompt.ask(f"[bold green]{prompt}[/bold green]").strip()
         except (KeyboardInterrupt, EOFError):
             return "/exit"
+

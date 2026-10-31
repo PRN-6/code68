@@ -38,3 +38,4 @@ def is_safe_path(requested_path: str | Path, workspace_root: Path) -> bool:
         return True
     except SecuritySandboxError:
         return False
+

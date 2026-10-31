@@ -73,3 +73,4 @@ class SessionManager:
             except Exception:
                 continue
         return sorted(sessions, key=lambda s: s.get("created_at", ""), reverse=True)
+

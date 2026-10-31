@@ -46,3 +46,4 @@ class ContextBuilder:
 
         lines.append("\nProject Directory Tree:\n" + tree)
         return "\n".join(lines)
+

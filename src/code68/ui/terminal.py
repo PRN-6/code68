@@ -18,3 +18,4 @@ class TerminalUI:
 
     def print(self, *args, **kwargs) -> None:
         self.console.print(*args, **kwargs)
+
