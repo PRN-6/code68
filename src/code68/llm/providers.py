@@ -58,7 +58,7 @@ class OpenAICompatibleProvider(BaseLLMProvider):
     async def health_check(self) -> Dict[str, Any]:
         """Check if remote inference endpoint is reachable and healthy."""
         url = f"{self.base_url}/models"
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=3.0) as client:
             try:
                 resp = await client.get(url, headers=self._headers())
                 if resp.status_code == 200:

@@ -31,32 +31,38 @@ class TerminalTools:
 
             is_destr, desc = is_destructive_command(command)
             if is_destr:
-                # Still returned to agent as a security flag if not overridden by approval
                 return f"Execution blocked: Command flagged as dangerous ({desc}): '{command}'"
 
-            # Execute subprocess asynchronously
-            process = await asyncio.create_subprocess_shell(
-                command,
-                cwd=str(target_cwd),
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-
-            try:
-                stdout_data, stderr_data = await asyncio.wait_for(
-                    process.communicate(), timeout=float(timeout)
-                )
-            except asyncio.TimeoutError:
+            def _execute_sync():
                 try:
-                    process.kill()
-                    await process.wait()
-                except Exception:
-                    pass
-                return f"Error: Command timed out after {timeout} seconds: '{command}'"
+                    import shlex
+                    try:
+                        args = shlex.split(command, posix=False)
+                        res = subprocess.run(
+                            args,
+                            cwd=str(target_cwd),
+                            capture_output=True,
+                            text=True,
+                            timeout=float(timeout),
+                        )
+                    except Exception:
+                        res = subprocess.run(
+                            command,
+                            shell=True,
+                            cwd=str(target_cwd),
+                            capture_output=True,
+                            text=True,
+                            timeout=float(timeout),
+                        )
+                    return res.returncode, res.stdout.strip(), res.stderr.strip(), None
+                except subprocess.TimeoutExpired:
+                    return -1, "", "", f"Error: Command timed out after {timeout} seconds: '{command}'"
+                except Exception as ex:
+                    return -1, "", "", f"Error running command '{command}': {ex}"
 
-            stdout_str = stdout_data.decode("utf-8", errors="replace").strip()
-            stderr_str = stderr_data.decode("utf-8", errors="replace").strip()
-            exit_code = process.returncode
+            exit_code, stdout_str, stderr_str, err = await asyncio.to_thread(_execute_sync)
+            if err:
+                return err
 
             output_parts = [f"Command: {command}", f"Exit Code: {exit_code}"]
             if stdout_str:

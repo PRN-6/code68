@@ -22,12 +22,12 @@ app = typer.Typer(
 )
 
 
+SUBCOMMANDS = {"doctor", "config", "init"}
+
+
 @app.callback(invoke_without_command=True)
 def main(
     ctx: typer.Context,
-    prompt: Optional[str] = typer.Argument(
-        None, help="Direct prompt to execute (if omitted, starts interactive REPL)"
-    ),
     model: Optional[str] = typer.Option(
         None, "--model", "-m", help="Override the LLM model name"
     ),
@@ -43,9 +43,15 @@ def main(
         typer.echo(f"Code68 version {__version__}")
         raise typer.Exit()
 
-    # If a subcommand (like doctor, config, init) was invoked, don't run default chat
+    # If a subcommand (like doctor, config, init) was invoked, let Typer handle it
     if ctx.invoked_subcommand is not None:
         return
+
+    # Check if a direct prompt was passed in argv (e.g. `code68 "Explain this project"`)
+    raw_args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
+    direct_prompt = None
+    if raw_args and raw_args[0] not in SUBCOMMANDS:
+        direct_prompt = " ".join(raw_args)
 
     # Load configuration
     cfg = Config.load(Path.cwd())
@@ -57,9 +63,9 @@ def main(
     ui = TerminalUI()
     agent = Code68Agent(workspace_root=Path.cwd(), config=cfg, ui=ui)
 
-    if prompt:
+    if direct_prompt:
         # Run one-shot prompt
-        asyncio.run(agent.execute(prompt, stream=True))
+        asyncio.run(agent.execute(direct_prompt, stream=True))
     else:
         # Start interactive REPL
         asyncio.run(run_interactive_session(agent, ui, cfg))

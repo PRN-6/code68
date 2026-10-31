@@ -43,18 +43,14 @@ class AgentLoop:
         on_token: Optional[Callable[[str], None]] = None,
     ) -> str:
         """Run the agent loop until the task is complete or maximum iterations reached."""
-        print("[DEBUG Loop] Entered run()")
         self.conversation.add_user_message(user_prompt)
-        print("[DEBUG Loop] Added user message")
         tools_schema = self.tool_registry.get_openai_tools()
-        print(f"[DEBUG Loop] Got tools schema: {len(tools_schema)}")
 
         iteration = 0
         final_answer = ""
 
         while iteration < self.max_iterations:
             iteration += 1
-            print(f"[DEBUG Loop] iteration {iteration}")
 
             # Check loop detector
             is_loop, loop_reason = self.loop_detector.is_looping()
@@ -67,7 +63,6 @@ class AgentLoop:
 
             # Query Cloud LLM
             messages = self.conversation.get_messages()
-            print(f"[DEBUG Loop] calling chat_complete with {len(messages)} messages")
             try:
                 response_msg: Message = await self.llm_provider.chat_complete(
                     messages=messages,
@@ -84,8 +79,6 @@ class AgentLoop:
                 if self.renderer:
                     self.renderer.render_warning("Operation cancelled by user.")
                 return "Operation cancelled."
-
-            print(f"[DEBUG Loop] got response: content={response_msg.content!r}, tool_calls={len(response_msg.tool_calls or [])}")
 
             # Check for native tool calls or fallback JSON in text
             tool_calls = response_msg.tool_calls
@@ -108,14 +101,12 @@ class AgentLoop:
             for tc in tool_calls:
                 tool_name = tc.function.name
                 arguments = tc.parse_arguments()
-                print(f"[DEBUG Loop] executing tool {tool_name} with args {arguments}")
 
                 if self.renderer:
                     self.renderer.render_tool_call(tool_name, arguments)
 
                 # Execute via registry (enforces permissions & sandbox)
                 result_str = await self.tool_registry.execute(tool_name, arguments)
-                print(f"[DEBUG Loop] tool {tool_name} executed, result len={len(result_str)}")
                 is_error = result_str.startswith("Error") or result_str.startswith("Permission denied")
 
                 # Record call in loop detector

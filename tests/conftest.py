@@ -1,7 +1,7 @@
 """Pytest fixtures for Code68 test suite."""
 
 import shutil
-import tempfile
+import uuid
 from pathlib import Path
 import git
 import pytest
@@ -15,15 +15,17 @@ from code68.tools.registry import ToolRegistry
 
 @pytest.fixture
 def temp_workspace():
-    """Create a temporary workspace directory with initialized git repo."""
-    temp_dir = tempfile.mkdtemp(prefix="code68_test_")
-    ws = Path(temp_dir)
+    """Create a temporary workspace directory inside workspace root for full sandbox write permissions."""
+    base_tmp = Path(__file__).resolve().parent.parent / ".test_tmp"
+    base_tmp.mkdir(parents=True, exist_ok=True)
+    ws = base_tmp / f"test_{uuid.uuid4().hex[:8]}"
+    ws.mkdir(parents=True, exist_ok=True)
     git.Repo.init(ws)
     # Create sample files
     (ws / "sample.py").write_text("def hello():\n    return 'world'\n", encoding="utf-8")
     (ws / "README.md").write_text("# Test Project\nSample description.", encoding="utf-8")
     yield ws
-    shutil.rmtree(temp_dir, ignore_errors=True)
+    shutil.rmtree(ws, ignore_errors=True)
 
 
 @pytest.fixture

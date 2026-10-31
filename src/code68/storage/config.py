@@ -64,7 +64,10 @@ class Config(BaseModel):
     def get_config_dir(cls) -> Path:
         """Returns the user-level configuration directory."""
         config_dir = Path.home() / ".code68"
-        config_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            config_dir.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
         return config_dir
 
     @classmethod

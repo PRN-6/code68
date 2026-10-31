@@ -70,7 +70,6 @@ class Code68Agent:
 
     async def execute(self, prompt: str, stream: bool = True) -> str:
         """Run an instruction through the agent loop."""
-        print("[DEBUG Agent] Entered execute()")
         if not self.conversation:
             self._initialize_conversation()
 

@@ -1,5 +1,6 @@
 """Tests for Code68 tools."""
 
+import sys
 import pytest
 from code68.tools.filesystem import FilesystemTools
 from code68.tools.search import SearchTools
@@ -90,7 +91,7 @@ def test_search_tools(temp_workspace):
 @pytest.mark.asyncio
 async def test_terminal_run_command(temp_workspace):
     term = TerminalTools(temp_workspace)
-    res = await term.run_command("python -c \"print('Hello from terminal')\"")
+    res = await term.run_command(f'"{sys.executable}" -c "print(\'Hello from terminal\')"')
     assert "Hello from terminal" in res
     assert "Exit Code: 0" in res
 
@@ -99,5 +100,5 @@ async def test_terminal_run_command(temp_workspace):
 async def test_terminal_timeout(temp_workspace):
     term = TerminalTools(temp_workspace)
     # 1 second timeout on 3 second sleep
-    res = await term.run_command("python -c \"import time; time.sleep(3)\"", timeout=1)
+    res = await term.run_command(f'"{sys.executable}" -c "import time; time.sleep(3)"', timeout=1)
     assert "timed out after 1 seconds" in res

@@ -71,28 +71,25 @@ class TestingTools:
             return f"Error running type checker: {e}"
 
     async def _run_subproc(self, command: str, timeout: int = 120) -> str:
-        process = await asyncio.create_subprocess_shell(
-            command,
-            cwd=str(self.workspace_root),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-
-        try:
-            stdout_data, stderr_data = await asyncio.wait_for(
-                process.communicate(), timeout=float(timeout)
-            )
-        except asyncio.TimeoutError:
+        def _exec():
             try:
-                process.kill()
-                await process.wait()
-            except Exception:
-                pass
-            return f"Execution timed out after {timeout} seconds: {command}"
+                res = subprocess.run(
+                    command,
+                    shell=True,
+                    cwd=str(self.workspace_root),
+                    capture_output=True,
+                    text=True,
+                    timeout=float(timeout),
+                )
+                return res.returncode, res.stdout.strip(), res.stderr.strip(), None
+            except subprocess.TimeoutExpired:
+                return -1, "", "", f"Execution timed out after {timeout} seconds: {command}"
+            except Exception as e:
+                return -1, "", "", f"Execution error: {e}"
 
-        stdout_str = stdout_data.decode("utf-8", errors="replace").strip()
-        stderr_str = stderr_data.decode("utf-8", errors="replace").strip()
-        code = process.returncode
+        code, stdout_str, stderr_str, err = await asyncio.to_thread(_exec)
+        if err:
+            return err
 
         status_text = "PASSED" if code == 0 else f"FAILED (Exit Code: {code})"
         output = [f"Result: {status_text}", f"Command: {command}"]
