@@ -15,10 +15,12 @@ class GitTools:
         self.workspace_root = workspace_root.resolve()
 
     def _get_repo(self) -> git.Repo:
+        if not (self.workspace_root / ".git").exists():
+            raise RuntimeError(f"'{self.workspace_root}' is not a Git repository.")
         try:
-            return git.Repo(self.workspace_root, search_parent_directories=True)
-        except InvalidGitRepositoryError:
-            raise RuntimeError(f"'{self.workspace_root}' is not inside a Git repository.")
+            return git.Repo(self.workspace_root, search_parent_directories=False)
+        except (InvalidGitRepositoryError, Exception) as e:
+            raise RuntimeError(f"Failed to open Git repository at '{self.workspace_root}': {e}")
 
     def git_status(self) -> str:
         """Get git status showing modified, untracked, and staged files."""
