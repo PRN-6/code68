@@ -321,11 +321,12 @@ if __name__ == "__main__":
         tunnel_url = try_cloudflare(port=PORT).tunnel
         print("=" * 60)
         print(f"PUBLIC TUNNEL URL: {tunnel_url}/v1")
-        print(f"Set this in your local terminal:")
-        print(f"export CODE68_BASE_URL={tunnel_url}/v1")
-        print(f"export CODE68_API_KEY={API_KEY}")
+        print()
+        print("Add these to your local .env file:")
+        print(f"CODE68_BASE_URL={tunnel_url}/v1")
+        print(f"CODE68_API_KEY={API_KEY}")
         print("=" * 60)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Tunnel setup failed: {e}. Server listening locally at http://localhost:{PORT}")
 
     uvicorn.run(app, host=HOST, port=PORT)
