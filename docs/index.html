@@ -346,6 +346,10 @@
         <button onclick="switchDemo(2)" id="tab-2" class="px-3.5 py-1.5 rounded-t text-slate-400 hover:text-white transition-colors">
           3. AST Architecture Scan
         </button>
+        <button onclick="switchDemo(3)" id="tab-3" class="px-3.5 py-1.5 rounded-t text-slate-400 hover:text-white transition-colors flex items-center space-x-1.5">
+          <i data-lucide="film" class="w-3.5 h-3.5 text-brand-emerald"></i>
+          <span>4. Real Terminal GIF</span>
+        </button>
       </div>
 
       <!-- Terminal Body Content -->
@@ -722,19 +726,33 @@
     <li><code class="text-brand-emerald">security/sandbox.py</code>: Boundary guardian enforcing workspace isolation.</li>
     <li><code class="text-brand-emerald">llm/providers.py</code>: OpenAI-compatible SSE stream accumulator.</li>
   </ul>
-</div>`
+</div>`,
+
+      // Scenario 4: Real Terminal GIF
+      `<div class="p-2 flex flex-col items-center">
+        <div class="relative w-full rounded-lg overflow-hidden border border-white/10 shadow-2xl bg-black">
+          <img src="assets/demo.gif" alt="Code68 Terminal Screen Recording" class="w-full h-auto object-cover rounded-lg" />
+        </div>
+        <p class="text-[11px] text-slate-400 mt-3 font-mono flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-brand-emerald pulse-dot"></span>
+          <span>Uncut live terminal session of Code68 executing tool commands and automated reasoning.</span>
+        </p>
+      </div>`
     ];
 
     function switchDemo(idx) {
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 4; i++) {
         const tab = document.getElementById(`tab-${i}`);
-        if (i === idx) {
-          tab.className = "px-3.5 py-1.5 rounded-t font-semibold text-brand-emerald border-b-2 border-brand-emerald bg-white/[0.04]";
-        } else {
-          tab.className = "px-3.5 py-1.5 rounded-t text-slate-400 hover:text-white transition-colors";
+        if (tab) {
+          if (i === idx) {
+            tab.className = "px-3.5 py-1.5 rounded-t font-semibold text-brand-emerald border-b-2 border-brand-emerald bg-white/[0.04] flex items-center space-x-1.5";
+          } else {
+            tab.className = "px-3.5 py-1.5 rounded-t text-slate-400 hover:text-white transition-colors flex items-center space-x-1.5";
+          }
         }
       }
       document.getElementById('terminal-content').innerHTML = scenarios[idx];
+      lucide.createIcons();
     }
     // Load first demo by default
     switchDemo(0);

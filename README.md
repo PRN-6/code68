@@ -1,9 +1,14 @@
 # Code68 🚀
 ### Autonomous AI Coding Agent | Cloud Intelligence + Local Execution
 
+[![Website](https://img.shields.io/badge/website-prn--6.github.io%2Fcode68-blue.svg)](https://prn-6.github.io/code68/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-32%20passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-33%20passed-brightgreen.svg)]()
+
+<p align="center">
+  <img src="docs/assets/demo.gif" alt="Code68 Terminal Demo" width="100%" />
+</p>
 
 Code68 is an independent, modular open-source terminal AI coding agent inspired by Claude Code.
 

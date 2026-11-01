@@ -32,3 +32,9 @@ code68_audit.log
 .idea/
 .DS_Store
 Thumbs.db
+
+# Large raw screen recordings
+g1.gif
+*.raw.gif
+*.mov
+*.mp4
