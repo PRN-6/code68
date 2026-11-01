@@ -128,7 +128,10 @@
         <a href="#install" class="hover:text-brand-emerald transition-colors">Install</a>
         <a href="#architecture" class="hover:text-brand-emerald transition-colors">Architecture</a>
         <a href="#security" class="hover:text-brand-emerald transition-colors">Security</a>
-        <a href="#faq" class="hover:text-brand-emerald transition-colors">FAQ</a>
+        <a href="setup.html" class="text-brand-emerald hover:underline font-semibold flex items-center space-x-1">
+          <span>Docs &amp; Setup</span>
+          <span class="text-[10px]">&rarr;</span>
+        </a>
       </nav>
 
       <!-- Right CTAs -->
@@ -138,10 +141,10 @@
           <i data-lucide="github" class="w-4 h-4"></i>
           <span>Star on GitHub</span>
         </a>
-        <a href="#install" 
+        <a href="setup.html" 
            class="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-md bg-brand-emerald hover:bg-brand-emeraldHover text-black font-semibold transition-all shadow-[0_0_15px_rgba(0,245,155,0.3)]">
-          <span>Get Started</span>
-          <span>&darr;</span>
+          <span>Setup Guide</span>
+          <span>&rarr;</span>
         </a>
       </div>
 
@@ -177,8 +180,14 @@
 
     <!-- Hero CTA Buttons -->
     <div class="flex flex-wrap items-center justify-center gap-4 mb-9 font-mono text-xs">
-      <a href="#install" 
+      <a href="setup.html" 
          class="flex items-center space-x-2 px-5 py-2.5 rounded-md bg-brand-emerald hover:bg-brand-emeraldHover text-black font-bold transition-all shadow-[0_0_20px_rgba(0,245,155,0.35)]">
+        <i data-lucide="book-open" class="w-4 h-4"></i>
+        <span>Setup &amp; Docs Guide</span>
+      </a>
+
+      <a href="#install" 
+         class="flex items-center space-x-2 px-5 py-2.5 rounded-md border border-white/15 bg-white/[0.03] hover:bg-white/[0.08] hover:border-white/30 text-white transition-all">
         <i data-lucide="download" class="w-4 h-4"></i>
         <span>Install Code68</span>
       </a>
@@ -186,7 +195,7 @@
       <a href="#demo" 
          class="flex items-center space-x-2 px-5 py-2.5 rounded-md border border-white/15 bg-white/[0.03] hover:bg-white/[0.08] hover:border-white/30 text-white transition-all">
         <i data-lucide="play" class="w-3.5 h-3.5 fill-current text-brand-emerald"></i>
-        <span>Explore Live Terminal Demo</span>
+        <span>Live Terminal Demo</span>
       </a>
     </div>
 
@@ -480,6 +489,23 @@
         <!-- Rendered via JS -->
       </div>
     </div>
+
+    <!-- Dedicated Guide Banner -->
+    <div class="mt-8 p-5 rounded-xl border border-brand-emerald/30 bg-brand-emeraldDim flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div>
+        <div class="text-white font-mono font-bold text-sm flex items-center space-x-2">
+          <i data-lucide="book-open" class="w-4 h-4 text-brand-emerald"></i>
+          <span>Looking for the complete deep-dive setup manual?</span>
+        </div>
+        <p class="text-slate-400 font-sans text-xs mt-1">
+          Detailed step-by-step guides for Kaggle dual Tesla T4s, Ollama, OpenRouter/Groq, security permissions, and CLI workflows.
+        </p>
+      </div>
+      <a href="setup.html" class="shrink-0 px-4 py-2 rounded-md bg-brand-emerald hover:bg-brand-emeraldHover text-black font-mono font-bold text-xs flex items-center space-x-2 transition-all">
+        <span>Read Complete Docs</span>
+        <span>&rarr;</span>
+      </a>
+    </div>
   </section>
 
   <!-- ================= FAQ SECTION ================= -->
@@ -549,6 +575,7 @@
       </div>
 
       <div class="flex items-center space-x-6 text-slate-400">
+        <a href="setup.html" class="hover:text-brand-emerald transition-colors">Documentation</a>
         <a href="https://github.com/PRN-6/code68" target="_blank" class="hover:text-brand-emerald transition-colors">GitHub Repository</a>
         <a href="https://github.com/PRN-6/code68/blob/main/LICENSE" target="_blank" class="hover:text-brand-emerald transition-colors">MIT License</a>
         <a href="https://github.com/PRN-6/code68/issues" target="_blank" class="hover:text-brand-emerald transition-colors">Report Issues</a>
@@ -720,3 +747,4 @@
   </script>
 </body>
 </html>
+

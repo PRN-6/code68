@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup & User Guide — Code68</title>
+  <meta name="description" content="Comprehensive step-by-step setup and user manual for Code68. Detailed guides for Kaggle GPU, Ollama, Cloud APIs, permissions, and CLI workflows.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              emerald: '#00f59b',
+              emeraldHover: '#00df88',
+              emeraldDim: 'rgba(0, 245, 155, 0.12)',
+              dark: '#060708',
+              surface: '#0b0d0e',
+              border: '#1b1f24',
+              muted: '#7d8590'
+            }
+          },
+          fontFamily: {
+            pixel: ['"Silkscreen"', 'monospace'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            sans: ['"Inter"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #060708;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 40px 40px;
+      font-family: 'Inter', sans-serif;
+      color: #e6edf3;
+    }
+    .pulse-dot {
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 6px #00f59b); }
+      50% { opacity: 0.6; transform: scale(0.9); filter: drop-shadow(0 0 2px #00f59b); }
+    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #060708; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00f59b; }
+  </style>
+</head>
+<body class="min-h-screen text-slate-200 selection:bg-brand-emerald selection:text-black">
+
+  <!-- ================= NAVBAR ================= -->
+  <header class="sticky top-0 z-50 backdrop-blur-md bg-[#060708]/85 border-b border-white/[0.08]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <div class="flex items-center space-x-3">
+        <span class="w-2.5 h-2.5 rounded-full bg-brand-emerald pulse-dot"></span>
+        <a href="index.html" class="font-pixel text-xl tracking-wider text-white hover:text-brand-emerald transition-colors font-bold">
+          CODE68
+        </a>
+        <span class="font-mono text-xs px-2 py-0.5 rounded border border-white/10 bg-white/[0.03] text-slate-400">
+          DOCS
+        </span>
+      </div>
+
+      <nav class="hidden md:flex items-center space-x-6 font-mono text-xs text-slate-400">
+        <a href="index.html" class="hover:text-brand-emerald transition-colors">&larr; Home</a>
+        <a href="#install" class="hover:text-brand-emerald transition-colors">1. Installation</a>
+        <a href="#llm-backends" class="hover:text-brand-emerald transition-colors">2. LLM Backends</a>
+        <a href="#kaggle-guide" class="hover:text-brand-emerald transition-colors">3. Kaggle Setup</a>
+        <a href="#configuration" class="hover:text-brand-emerald transition-colors">4. Configuration</a>
+        <a href="#usage" class="hover:text-brand-emerald transition-colors">5. Workflow</a>
+        <a href="#troubleshooting" class="hover:text-brand-emerald transition-colors">6. Troubleshooting</a>
+      </nav>
+
+      <div class="flex items-center space-x-3 font-mono text-xs">
+        <a href="https://github.com/PRN-6/code68" target="_blank" 
+           class="flex items-center space-x-2 px-3.5 py-1.5 rounded-md border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] text-white transition-all">
+          <i data-lucide="github" class="w-4 h-4"></i>
+          <span>GitHub</span>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT CONTAINER ================= -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex gap-12">
+    
+    <!-- Sidebar / Sticky Table of Contents -->
+    <aside class="hidden lg:block w-64 shrink-0 font-mono text-xs sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto space-y-6 text-slate-400">
+      <div>
+        <h4 class="text-white font-bold uppercase tracking-wider mb-2.5 text-[11px] text-brand-emerald">Quick Navigation</h4>
+        <ul class="space-y-2 border-l border-white/10 pl-3">
+          <li><a href="#overview" class="hover:text-brand-emerald transition-colors">System Overview</a></li>
+          <li><a href="#install" class="hover:text-brand-emerald transition-colors">Step 1: Installation</a></li>
+          <li>
+            <a href="#llm-backends" class="hover:text-brand-emerald transition-colors">Step 2: LLM Brains</a>
+            <ul class="pl-3 mt-1.5 space-y-1.5 border-l border-white/5 text-slate-500 text-[11px]">
+              <li><a href="#kaggle-guide" class="hover:text-slate-300">&bull; Kaggle Dual-GPU</a></li>
+              <li><a href="#ollama-guide" class="hover:text-slate-300">&bull; Local Ollama</a></li>
+              <li><a href="#cloud-api-guide" class="hover:text-slate-300">&bull; OpenRouter / Groq</a></li>
+              <li><a href="#mock-guide" class="hover:text-slate-300">&bull; Offline Mock Mode</a></li>
+            </ul>
+          </li>
+          <li><a href="#configuration" class="hover:text-brand-emerald transition-colors">Step 3: Configuration</a></li>
+          <li><a href="#usage" class="hover:text-brand-emerald transition-colors">Step 4: Using Code68</a></li>
+          <li><a href="#slash-commands" class="hover:text-brand-emerald transition-colors">Step 5: Slash Commands</a></li>
+          <li><a href="#security" class="hover:text-brand-emerald transition-colors">Step 6: Security &amp; Sandbox</a></li>
+          <li><a href="#troubleshooting" class="hover:text-brand-emerald transition-colors">Step 7: Troubleshooting</a></li>
+        </ul>
+      </div>
+
+      <div class="p-3.5 rounded-lg border border-brand-emerald/20 bg-brand-emeraldDim text-[11px]">
+        <div class="font-bold text-brand-emerald mb-1">&zap; Pro Tip</div>
+        <p class="text-slate-300 font-sans">
+          Run <code class="text-white font-mono">code68 setup</code> anytime in your terminal to launch the interactive configuration wizard.
+        </p>
+      </div>
+    </aside>
+
+    <!-- Main Documentation Articles -->
+    <main class="flex-1 min-w-0 max-w-4xl space-y-16 pb-24">
+      
+      <!-- Header -->
+      <div>
+        <div class="flex items-center space-x-2 font-mono text-xs text-brand-emerald mb-2">
+          <span>DOCUMENTATION</span>
+          <span>&middot;</span>
+          <span>COMPREHENSIVE SETUP &amp; ARCHITECTURE MANUAL</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-bold text-white font-mono tracking-tight mb-4">
+          Complete Setup &amp; Usage Guide
+        </h1>
+        <p class="text-slate-400 font-sans text-sm sm:text-base leading-relaxed">
+          Code68 is an independent, autonomous terminal coding agent. This guide covers everything: from running the heavy LLM server on free Kaggle GPUs or local Ollama, to configuring security levels and pair programming in any project repository.
+        </p>
+      </div>
+
+      <!-- ================= SECTION 0: OVERVIEW ================= -->
+      <section id="overview" class="space-y-4">
+        <h2 class="text-xl font-bold text-white font-mono flex items-center space-x-2 border-b border-white/10 pb-2">
+          <i data-lucide="cpu" class="w-5 h-5 text-brand-emerald"></i>
+          <span>1. The Core Concept: How Code68 Works</span>
+        </h2>
+        <p class="text-slate-300 text-sm font-sans leading-relaxed">
+          Unlike ordinary chatbots that just answer in text, Code68 executes a <b>real autonomous agent loop</b>:
+        </p>
+
+        <!-- ASCII Diagram Card -->
+        <div class="p-4 rounded-xl border border-white/10 bg-[#0a0c0e] font-mono text-xs text-slate-300 overflow-x-auto leading-relaxed">
+          <pre>┌──────────────────────────────────────────────┐
+│  CLOUD LLM BRAIN (Remote GPU / Kaggle / API) │
+│  &bull; Qwen2.5-Coder-7B (4-bit NF4 Quantization) │
+│  &bull; Pure reasoning &amp; tool decision engine    │
+└──────────────────────┬───────────────────────┘
+                       │  Encrypted Tunnel (Cloudflare / HTTPS)
+                       ▼
+┌──────────────────────────────────────────────┐
+│  LOCAL AGENT (Your PC / Terminal)            │
+│  &bull; Filesystem: Surgical unified diff edits   │
+│  &bull; Search: AST symbols &amp; ripgrep regex       │
+│  &bull; Terminal: Sandboxed execution &amp; timeouts  │
+│  &bull; Testing: Pytest &amp; coverage verification   │
+│  &bull; Security: Workspace boundary enforcement  │
+└──────────────────────────────────────────────┘</pre>
+        </div>
+
+        <div class="p-4 rounded-lg border border-blue-500/20 bg-blue-500/5 text-xs font-sans text-blue-200">
+          <b>Key Advantage:</b> Your local machine never needs to load a heavy 15GB model into memory. Your local computer executes only lightweight Python scripts, while the remote GPU does the heavy token generation.
+        </div>
+      </section>
+
+      <!-- ================= SECTION 1: INSTALL ================= -->
+      <section id="install" class="space-y-4">
+        <h2 class="text-xl font-bold text-white font-mono flex items-center space-x-2 border-b border-white/10 pb-2">
+          <i data-lucide="download" class="w-5 h-5 text-brand-emerald"></i>
+          <span>2. Step 1: Install Code68 Globally</span>
+        </h2>
+        
+        <p class="text-slate-300 text-sm font-sans leading-relaxed">
+          Code68 requires <b>Python 3.11 or newer</b>. Install it with pip or pipx so the <code class="text-brand-emerald">code68</code> binary is accessible from any terminal window:
+        </p>
+
+        <!-- Command Box -->
+        <div class="p-3.5 rounded-lg border border-white/10 bg-[#0a0c0e] font-mono text-xs flex items-center justify-between">
+          <code>pip install git+https://github.com/PRN-6/code68.git</code>
+          <button onclick="copyCode(this, 'pip install git+https://github.com/PRN-6/code68.git')" class="text-slate-400 hover:text-brand-emerald">copy</button>
+        </div>
+
+        <p class="text-slate-400 text-xs font-sans">
+          Or if you prefer an isolated installation with <code class="text-white font-mono">pipx</code>:
+        </p>
+        <div class="p-3 rounded-lg border border-white/5 bg-[#0a0c0e]/60 font-mono text-xs flex items-center justify-between">
+          <code>pipx install git+https://github.com/PRN-6/code68.git</code>
+          <button onclick="copyCode(this, 'pipx install git+https://github.com/PRN-6/code68.git')" class="text-slate-400 hover:text-brand-emerald">copy</button>
+        </div>
+
+        <p class="text-slate-300 text-sm font-sans">
+          Verify that Code68 is recognized:
+        </p>
+        <div class="p-3 rounded-lg border border-white/10 bg-[#0a0c0e] font-mono text-xs text-brand-emerald">
+          code68 --version &rarr; Code68 version 0.1.0
+        </div>
+      </section>
+
+      <!-- ================= SECTION 2: LLM BACKENDS ================= -->
+      <section id="llm-backends" class="space-y-6">
+        <h2 class="text-xl font-bold text-white font-mono flex items-center space-x-2 border-b border-white/10 pb-2">
+          <i data-lucide="server" class="w-5 h-5 text-brand-emerald"></i>
+          <span>3. Step 2: Choosing &amp; Setting Up Your LLM Brain</span>
+        </h2>
+        
+        <p class="text-slate-300 text-sm font-sans leading-relaxed">
+          Code68 uses a standardized OpenAI-compatible API layer. You can connect it to <b>any</b> of the following four providers:
+        </p>
+
+        <!-- BACKEND A: KAGGLE -->
+        <div id="kaggle-guide" class="p-6 rounded-xl border border-white/10 bg-[#0a0c0e] space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-mono text-base font-bold text-white flex items-center space-x-2">
+              <span class="px-2 py-0.5 rounded text-[10px] bg-brand-emeraldDim text-brand-emerald border border-brand-emerald/30">RECOMMENDED</span>
+              <span>Backend A: Free Kaggle Dual Tesla T4 GPUs</span>
+            </h3>
+            <span class="text-xs font-mono text-slate-500">100% Free Cloud GPU</span>
+          </div>
+
+          <p class="text-slate-400 text-xs font-sans leading-relaxed">
+            Kaggle provides 30 hours of free GPU access every week with 2x NVIDIA Tesla T4 GPUs (32GB combined VRAM). This is ideal for running <code class="text-brand-emerald">Qwen2.5-Coder-7B-Instruct</code> at maximum performance with zero local heat or battery drain.
+          </p>
+
+          <div class="space-y-2 text-xs font-sans">
+            <div class="font-bold text-slate-200">Instructions:</div>
+            <ol class="list-decimal ml-5 space-y-2 text-slate-300">
+              <li>Open your browser and navigate to <a href="https://www.kaggle.com/code" target="_blank" class="text-brand-emerald underline">kaggle.com/code</a> &rarr; click <b>New Notebook</b>.</li>
+              <li>
+                In the right sidebar under <b>Settings</b>:
+                <ul class="list-disc ml-5 mt-1 space-y-0.5 text-slate-400">
+                  <li><b>Accelerator</b>: select <code class="text-white font-mono">GPU T4 x 2</code></li>
+                  <li><b>Internet</b>: toggle <code class="text-white font-mono">ON</code> (required to download model &amp; tunnel)</li>
+                </ul>
+              </li>
+              <li>Paste this single command into the notebook cell and run it:</li>
+            </ol>
+          </div>
+
+          <!-- Kaggle 1-cell snippet -->
+          <div class="p-3.5 rounded-lg border border-white/10 bg-black/60 font-mono text-xs flex items-center justify-between">
+            <code class="text-slate-200">!git clone https://github.com/PRN-6/code68.git
+%cd /kaggle/working/code68
+!pip install -q -r server/requirements-server.txt
+!python server/kaggle_server.py</code>
+            <button onclick="copyCode(this, '!git clone https://github.com/PRN-6/code68.git\\n%cd /kaggle/working/code68\\n!pip install -q -r server/requirements-server.txt\\n!python server/kaggle_server.py')" class="text-slate-400 hover:text-brand-emerald ml-3">copy</button>
+          </div>
+
+          <p class="text-slate-400 text-xs font-sans">
+            In ~2 minutes, the cell output will print your private Cloudflare tunnel URL:
+          </p>
+          <div class="p-3 rounded-lg border border-white/10 bg-black/40 font-mono text-xs text-brand-emerald">
+            CODE68 TUNNEL URL: https://random-name.trycloudflare.com/v1
+          </div>
+
+          <p class="text-slate-400 text-xs font-sans">
+            Copy that URL and register it globally on your computer:
+          </p>
+          <div class="p-3 rounded-lg border border-white/10 bg-black/60 font-mono text-xs flex items-center justify-between">
+            <code>code68 config --global --set-url "https://random-name.trycloudflare.com/v1"</code>
+            <button onclick="copyCode(this, 'code68 config --global --set-url \"https://random-name.trycloudflare.com/v1\"')" class="text-slate-400 hover:text-brand-emerald">copy</button>
+          </div>
+        </div>
+
+        <!-- BACKEND B: OLLAMA -->
+        <div id="ollama-guide" class="p-6 rounded-xl border border-white/10 bg-[#0a0c0e] space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-mono text-base font-bold text-white flex items-center space-x-2">
+              <span class="px-2 py-0.5 rounded text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">OFFLINE</span>
+              <span>Backend B: Local Ollama (100% On-Device)</span>
+            </h3>
+            <span class="text-xs font-mono text-slate-500">Zero Internet Required</span>
+          </div>
+
+          <p class="text-slate-400 text-xs font-sans leading-relaxed">
+            If you have a computer with an NVIDIA GPU or Apple Silicon (M1/M2/M3/M4), you can run Code68 completely offline with <a href="https://ollama.com" target="_blank" class="text-brand-emerald underline">Ollama</a>.
+          </p>
+
+          <ol class="list-decimal ml-5 space-y-2 text-xs font-sans text-slate-300">
+            <li>Start Ollama with Qwen2.5-Coder:</li>
+          </ol>
+          <div class="p-3 rounded-lg border border-white/10 bg-black/60 font-mono text-xs flex items-center justify-between">
+            <code>ollama run qwen2.5-coder:7b</code>
+            <button onclick="copyCode(this, 'ollama run qwen2.5-coder:7b')" class="text-slate-400 hover:text-brand-emerald">copy</button>
+          </div>
+
+          <p class="text-slate-400 text-xs font-sans">
+            2. Configure Code68 to point to localhost:
+          </p>
+          <div class="p-3 rounded-lg border border-white/10 bg-black/60 font-mono text-xs flex items-center justify-between">
+            <code>code68 config --global --set-url "http://localhost:11434/v1" --set-model "qwen2.5-coder:7b"</code>
+            <button onclick="copyCode(this, 'code68 config --global --set-url \"http://localhost:11434/v1\" --set-model \"qwen2.5-coder:7b\"')" class="text-slate-400 hover:text-brand-emerald">copy</button>
+          </div>
+        </div>
+
+        <!-- BACKEND C: CLOUD APIS -->
+        <div id="cloud-api-guide" class="p-6 rounded-xl border border-white/10 bg-[#0a0c0e] space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-mono text-base font-bold text-white flex items-center space-x-2">
+              <span class="px-2 py-0.5 rounded text-[10px] bg-purple-500/10 text-purple-400 border border-purple-500/30">CLOUD</span>
+              <span>Backend C: OpenRouter, Groq, DeepSeek, OpenAI</span>
+            </h3>
+            <span class="text-xs font-mono text-slate-500">Ultra-Fast Commercial APIs</span>
+          </div>
+
+          <p class="text-slate-400 text-xs font-sans leading-relaxed">
+            If you already have an API key for OpenRouter, Groq, or DeepSeek, you can point Code68 to it without running any server:
+          </p>
+
+          <div class="space-y-3 font-mono text-xs">
+            <div>
+              <div class="text-slate-400 mb-1">OpenRouter (Supports Qwen-32B, DeepSeek, Claude):</div>
+              <div class="p-3 bg-black/60 rounded border border-white/10 flex items-center justify-between">
+                <code>code68 config --global --set-url "https://openrouter.ai/api/v1" --set-key "sk-or-v1-..." --set-model "qwen/qwen-2.5-coder-32b-instruct"</code>
+                <button onclick="copyCode(this, 'code68 config --global --set-url \"https://openrouter.ai/api/v1\" --set-key \"sk-or-v1-...\" --set-model \"qwen/qwen-2.5-coder-32b-instruct\"')" class="text-slate-400 hover:text-brand-emerald">copy</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-slate-400 mb-1">Groq (Ultra-Low Latency):</div>
+              <div class="p-3 bg-black/60 rounded border border-white/10 flex items-center justify-between">
+                <code>code68 config --global --set-url "https://api.groq.com/openai/v1" --set-key "gsk_..." --set-model "qwen-2.5-coder-32b"</code>
+                <button onclick="copyCode(this, 'code68 config --global --set-url \"https://api.groq.com/openai/v1\" --set-key \"gsk_...\" --set-model \"qwen-2.5-coder-32b\"')" class="text-slate-400 hover:text-brand-emerald">copy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BACKEND D: MOCK MODE -->
+        <div id="mock-guide" class="p-6 rounded-xl border border-white/10 bg-[#0a0c0e] space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-mono text-base font-bold text-white flex items-center space-x-2">
+              <span class="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30">DEV</span>
+              <span>Backend D: Local Developer Mock Server</span>
+            </h3>
+            <span class="text-xs font-mono text-slate-500">Testing CLI &amp; UI</span>
+          </div>
+          <p class="text-slate-400 text-xs font-sans leading-relaxed">
+            Want to test Code68's terminal interface without any GPU or API key? Start the built-in mock server:
+          </p>
+          <div class="p-3 bg-black/60 rounded border border-white/10 font-mono text-xs flex items-center justify-between">
+            <code>python server/kaggle_server.py</code>
+            <button onclick="copyCode(this, 'python server/kaggle_server.py')" class="text-slate-400 hover:text-brand-emerald">copy</button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= SECTION 3: CONFIGURATION ================= -->
+      <section id="configuration" class="space-y-4">
+        <h2 class="text-xl font-bold text-white font-mono flex items-center space-x-2 border-b border-white/10 pb-2">
+          <i data-lucide="sliders" class="w-5 h-5 text-brand-emerald"></i>
+          <span>4. Step 3: Configuration &amp; Priority Hierarchy</span>
+        </h2>
+
+        <p class="text-slate-300 text-sm font-sans leading-relaxed">
+          Code68 uses a 3-tier configuration hierarchy. Settings are resolved in this exact order:
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
+          <div class="p-4 rounded-lg border border-white/10 bg-[#0a0c0e]">
+            <div class="text-brand-emerald font-bold mb-1">Tier 1: Workspace</div>
+            <p class="text-slate-400 text-[11px] font-sans">
+              <code class="text-white">.code68/config.json</code> in your project directory. Overrides everything for that specific repository.
+            </p>
+          </div>
+          <div class="p-4 rounded-lg border border-white/10 bg-[#0a0c0e]">
+            <div class="text-cyan-400 font-bold mb-1">Tier 2: Global Config</div>
+            <p class="text-slate-400 text-[11px] font-sans">
+              <code class="text-white">~/.code68/config.json</code> in your home directory. Default settings used across all projects on your PC.
+            </p>
+          </div>
+          <div class="p-4 rounded-lg border border-white/10 bg-[#0a0c0e]">
+            <div class="text-purple-400 font-bold mb-1">Tier 3: Environment</div>
+            <p class="text-slate-400 text-[11px] font-sans">
+              Standard environment variables (e.g. <code class="text-white">CODE68_BASE_URL</code>, <code class="text-white">.env</code>).
+            </p>
+          </div>
+        </div>
+
+        <h3 class="font-mono text-sm font-bold text-white mt-6">All Environment Variables:</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left font-mono text-xs border border-white/10 rounded-lg overflow-hidden">
+            <thead class="bg-[#111418] text-slate-300">
+              <tr>
+                <th class="p-3 border-b border-white/10">Variable</th>
+                <th class="p-3 border-b border-white/10">Default</th>
+                <th class="p-3 border-b border-white/10">Purpose</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-slate-400">
+              <tr>
+                <td class="p-3 text-brand-emerald font-bold">CODE68_BASE_URL</td>
+                <td class="p-3">http://localhost:8000/v1</td>
+                <td class="p-3 font-sans">Inference server OpenAI-compatible completions endpoint</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-brand-emerald font-bold">CODE68_API_KEY</td>
+                <td class="p-3">code68-secret-key</td>
+                <td class="p-3 font-sans">Bearer authentication token for the server</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-brand-emerald font-bold">CODE68_MODEL</td>
+                <td class="p-3">Qwen/Qwen2.5-Coder-7B-Instruct</td>
+                <td class="p-3 font-sans">Target model identifier</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-brand-emerald font-bold">CODE68_PERMISSION_LEVEL</td>
+                <td class="p-3">edit-approved</td>
+                <td class="p-3 font-sans">Security level (read-only, edit-approved, full-auto...)</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-brand-emerald font-bold">CODE68_TIMEOUT_SECONDS</td>
+                <td class="p-3">120.0</td>
+                <td class="p-3 font-sans">Maximum HTTP timeout for inference stream</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 4: USAGE ================= -->
+      <section id="usage" class="space-y-4">
+        <h2 class="text-xl font-bold text-white font-mono flex items-center space-x-2 border-b border-white/10 pb-2">
+          <i data-lucide="play-circle" class="w-5 h-5 text-brand-emerald"></i>
+          <span>5. Step 4: Everyday Coding Workflow</span>
+        </h2>
+
+        <p class="text-slate-300 text-sm font-sans leading-relaxed">
+          Once installed and configured, you never need to launch Code68 from its installation directory. Open any project on your computer:
+        </p>
+
+        <div class="p-4 rounded-xl border border-white/10 bg-[#0a0c0e] font-mono text-xs space-y-2">
+          <div class="text-slate-500"># 1. Navigate to your actual project</div>
+          <div class="text-white">cd D:\projects\my-web-app</div>
+          <div class="text-slate-500 mt-2"># 2. Launch Code68 interactive REPL</div>
+          <div class="text-brand-emerald font-bold">code68</div>
+        </div>
+
+        <h3 class="font-mono text-sm font-bold text-white mt-4">One-Shot Command Line Prompts:</h3>
+        <p class="text-slate-400 text-xs font-sans">
+          You can ask Code68 to perform tasks directly from your shell without opening the interactive session:
+        </p>
+
+        <div class="space-y-2 font-mono text-xs">
+          <div class="p-3 rounded bg-black/60 border border-white/10 text-slate-300">
+            <code>code68 "Explain the architecture of this project"</code>
+          </div>
+          <div class="p-3 rounded bg-black/60 border border-white/10 text-slate-300">
+            <code>code68 "Find all failing pytest tests and apply surgical fixes"</code>
+          </div>
+          <div class="p-3 rounded bg-black/60 border border-white/10 text-slate-300">
+            <code>code68 "Refactor utils.py to use async httpx instead of requests"</code>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 5: SLASH COMMANDS ================= -->
+      <section id="slash-commands" class="space-y-4">
+        <h2 class="text-xl font-bold text-white font-mono flex items-center space-x-2 border-b border-white/10 pb-2">
+          <i data-lucide="terminal" class="w-5 h-5 text-brand-emerald"></i>
+          <span>6. Step 5: Interactive Slash Commands</span>
+        </h2>
+
+        <p class="text-slate-300 text-sm font-sans leading-relaxed">
+          While inside the Code68 REPL session, use slash commands to inspect state, review git diffs, save sessions, or reconfigure:
+        </p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left font-mono text-xs border border-white/10 rounded-lg overflow-hidden">
+            <thead class="bg-[#111418] text-slate-300">
+              <tr>
+                <th class="p-3 border-b border-white/10">Command</th>
+                <th class="p-3 border-b border-white/10">Description</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-slate-400">
+              <tr>
+                <td class="p-3 text-cyan-400 font-bold">/help</td>
+                <td class="p-3 font-sans">Displays the interactive commands quick reference</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-cyan-400 font-bold">/status</td>
+                <td class="p-3 font-sans">Check active model, endpoint connection health, and workspace root</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-cyan-400 font-bold">/diff</td>
+                <td class="p-3 font-sans">Displays a syntax-highlighted git diff of all uncommitted changes</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-cyan-400 font-bold">/undo</td>
+                <td class="p-3 font-sans">Prompts confirmation to revert uncommitted edits via <code class="text-slate-300 font-mono">git checkout .</code></td>
+              </tr>
+              <tr>
+                <td class="p-3 text-cyan-400 font-bold">/setup</td>
+                <td class="p-3 font-sans">Re-runs the interactive setup wizard to change providers on the fly</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-cyan-400 font-bold">/model [name]</td>
+                <td class="p-3 font-sans">View or switch active model without restarting session</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-cyan-400 font-bold">/sessions</td>
+                <td class="p-3 font-sans">List all saved conversation sessions in the current workspace</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-cyan-400 font-bold">/save [id]</td>
+                <td class="p-3 font-sans">Persist the current conversation thread to disk</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-cyan-400 font-bold">/resume &lt;id&gt;</td>
+                <td class="p-3 font-sans">Restore a previously saved session thread</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-cyan-400 font-bold">/compact</td>
+                <td class="p-3 font-sans">Summarize older conversation history to free context tokens</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-cyan-400 font-bold">/clear</td>
+                <td class="p-3 font-sans">Clear conversation history and re-scan the workspace</td>
+              </tr>
+              <tr>
+                <td class="p-3 text-cyan-400 font-bold">/exit</td>
+                <td class="p-3 font-sans">Gracefully exit Code68</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 6: SECURITY ================= -->
+      <section id="security" class="space-y-4">
+        <h2 class="text-xl font-bold text-white font-mono flex items-center space-x-2 border-b border-white/10 pb-2">
+          <i data-lucide="shield" class="w-5 h-5 text-brand-emerald"></i>
+          <span>7. Step 6: Security, Sandbox &amp; Permissions</span>
+        </h2>
+
+        <p class="text-slate-300 text-sm font-sans leading-relaxed">
+          Security is built directly into Code68's architecture. Every tool call passes through validation before reaching your operating system:
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
+          <div class="p-4 rounded-xl border border-white/10 bg-[#0a0c0e]">
+            <div class="text-white font-bold mb-2 flex items-center space-x-2">
+              <span class="text-brand-emerald">&bull;</span>
+              <span>Workspace Boundary (No Traversal)</span>
+            </div>
+            <p class="text-slate-400 font-sans text-xs leading-relaxed">
+              Paths containing <code class="text-white">../..</code> or attempting to escape the project root are rejected by <code class="text-brand-emerald">resolve_safe_path</code>. The model cannot read files outside the repository.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl border border-white/10 bg-[#0a0c0e]">
+            <div class="text-white font-bold mb-2 flex items-center space-x-2">
+              <span class="text-brand-emerald">&bull;</span>
+              <span>Destructive Command Interceptor</span>
+            </div>
+            <p class="text-slate-400 font-sans text-xs leading-relaxed">
+              Dangerous terminal patterns (<code class="text-red-400">rm -rf /</code>, disk wipes, fork bombs, <code class="text-red-400">git push --force</code>) are blocked regardless of permission level.
+            </p>
+          </div>
+        </div>
+
+        <h3 class="font-mono text-sm font-bold text-white mt-4">5 Permission Levels:</h3>
+        <div class="p-4 rounded-xl border border-white/10 bg-[#0a0c0e] font-mono text-xs space-y-2">
+          <div><code class="text-cyan-400 font-bold">1. read-only</code>: Can only read files, search symbols, and check git status. Cannot edit files or run commands.</div>
+          <div><code class="text-brand-emerald font-bold">2. edit-approved (Default)</code>: Automatically reads files and searches. Always asks for interactive confirmation before editing files or running terminal commands.</div>
+          <div><code class="text-amber-400 font-bold">3. auto-edit</code>: Automatically performs file edits and diffs. Asks approval before running terminal commands or deleting files.</div>
+          <div><code class="text-purple-400 font-bold">4. command-approved</code>: Auto-edits and runs safe read commands. Confirms before terminal execution.</div>
+          <div><code class="text-red-400 font-bold">5. full-auto</code>: Executes all non-destructive workspace operations without interactive prompts (for unattended scripts/automation).</div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 7: TROUBLESHOOTING ================= -->
+      <section id="troubleshooting" class="space-y-4">
+        <h2 class="text-xl font-bold text-white font-mono flex items-center space-x-2 border-b border-white/10 pb-2">
+          <i data-lucide="help-circle" class="w-5 h-5 text-brand-emerald"></i>
+          <span>8. Step 7: Troubleshooting &amp; Solutions</span>
+        </h2>
+
+        <div class="space-y-3 font-mono text-xs">
+          
+          <div class="p-4 rounded-lg border border-white/10 bg-[#0a0c0e]">
+            <div class="text-amber-400 font-bold mb-1">Error: "[Errno 11001] getaddrinfo failed"</div>
+            <p class="text-slate-400 font-sans text-xs leading-relaxed">
+              <b>Cause:</b> The endpoint URL is set to a placeholder (e.g. <code class="text-white">https://xxxx.trycloudflare.com</code>) or your Kaggle server cell was stopped.<br>
+              <b>Fix:</b> Update your URL globally:
+              <code class="text-brand-emerald block mt-1">code68 config --global --set-url "https://your-new-tunnel.trycloudflare.com/v1"</code>
+            </p>
+          </div>
+
+          <div class="p-4 rounded-lg border border-white/10 bg-[#0a0c0e]">
+            <div class="text-amber-400 font-bold mb-1">Error: "Target text not found in file"</div>
+            <p class="text-slate-400 font-sans text-xs leading-relaxed">
+              <b>Cause:</b> Line-ending differences between Windows (CRLF) and Unix (LF).<br>
+              <b>Fix:</b> Code68 v0.1.0 has automatic CRLF/LF line-ending normalization built in. If it still fails, provide 2-3 lines of surrounding context to disambiguate.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-lg border border-white/10 bg-[#0a0c0e]">
+            <div class="text-amber-400 font-bold mb-1">How do I verify everything is working?</div>
+            <p class="text-slate-400 font-sans text-xs leading-relaxed">
+              Run the diagnostics command in your terminal:
+              <code class="text-brand-emerald block mt-1">code68 doctor</code>
+              It tests your Python version, Git executable, ripgrep presence, and pings your LLM endpoint.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="border-t border-white/[0.08] bg-[#050607] py-10 px-4 font-mono text-xs text-center text-slate-500">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div>Code68 Documentation &middot; MIT Open Source License</div>
+      <div class="space-x-4">
+        <a href="index.html" class="hover:text-brand-emerald transition-colors">&larr; Back to Main Site</a>
+        <a href="https://github.com/PRN-6/code68" target="_blank" class="hover:text-brand-emerald transition-colors">GitHub Repo</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+    function copyCode(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'copied!';
+        btn.classList.add('text-brand-emerald', 'font-bold');
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.classList.remove('text-brand-emerald', 'font-bold');
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
+
