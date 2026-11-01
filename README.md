@@ -7,7 +7,7 @@
 [![Tests](https://img.shields.io/badge/tests-33%20passed-brightgreen.svg)]()
 
 <p align="center">
-  <img src="docs/assets/demo.gif" alt="Code68 Terminal Demo" width="100%" />
+  <img src="assets/demo.gif" alt="Code68 Terminal Demo" width="100%" />
 </p>
 
 Code68 is an independent, modular open-source terminal AI coding agent inspired by Claude Code.

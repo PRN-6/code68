@@ -35,6 +35,7 @@ Thumbs.db
 
 # Large raw screen recordings
 g1.gif
+assets/g1.gif
 *.raw.gif
 *.mov
 *.mp4
