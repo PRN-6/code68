@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import json
 from typing import List, Optional
+
 from code68.indexing.retrieval import estimate_tokens
 from code68.llm.models import Message, Role
 
@@ -16,8 +16,10 @@ class ConversationHistory:
         self.messages: List[Message] = []
 
     def add_message(self, message: Message) -> None:
-        """Append message to history."""
+        """Append message to history and auto-compact if exceeding token limit."""
         self.messages.append(message)
+        if self.total_estimated_tokens() > self.token_limit:
+            self.compact()
 
     def get_messages(self) -> List[Message]:
         """Return list of messages."""

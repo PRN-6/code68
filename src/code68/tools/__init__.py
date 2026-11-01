@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+
 from code68.security.permissions import ActionCategory, SecurityManager
 from code68.tools.filesystem import FilesystemTools
 from code68.tools.git import GitTools

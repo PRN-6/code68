@@ -1,6 +1,7 @@
 """Tests for Code68 security, sandboxing, and permissions."""
 
 import pytest
+
 from code68.security.permissions import ActionCategory, SecurityManager
 from code68.security.sandbox import SecuritySandboxError, is_safe_path, resolve_safe_path
 from code68.security.validation import (
@@ -60,7 +61,10 @@ def test_permission_levels():
 
     # 2. Edit-approved triggers callback
     approvals = []
-    callback = lambda prompt, details: approvals.append(prompt) or True
+
+    def callback(prompt, details):
+        return approvals.append(prompt) or True
+
     ea_manager = SecurityManager(permission_level=PermissionLevel.EDIT_APPROVED, approval_callback=callback)
 
     assert ea_manager.check_permission(ActionCategory.READ, "read file")

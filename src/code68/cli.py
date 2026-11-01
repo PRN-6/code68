@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import asyncio
-import os
 import shutil
 import sys
 from pathlib import Path
 from typing import Optional
+
 import typer
 from rich.table import Table
+
 from code68 import __version__
 from code68.core.agent import Code68Agent
 from code68.storage.config import Config, PermissionLevel
@@ -48,10 +49,26 @@ def main(
         return
 
     # Check if a direct prompt was passed in argv (e.g. `code68 "Explain this project"`)
-    raw_args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
+    # Skip known options and their arguments
+    options_with_value = {"--model", "-m", "--provider", "-p"}
+    positional_args = []
+    skip_next = False
+    for arg in sys.argv[1:]:
+        if skip_next:
+            skip_next = False
+            continue
+        if arg in options_with_value:
+            skip_next = True
+            continue
+        if any(arg.startswith(f"{opt}=") for opt in ("--model", "-m", "--provider", "-p")):
+            continue
+        if arg.startswith("-"):
+            continue
+        positional_args.append(arg)
+
     direct_prompt = None
-    if raw_args and raw_args[0] not in SUBCOMMANDS:
-        direct_prompt = " ".join(raw_args)
+    if positional_args and positional_args[0] not in SUBCOMMANDS:
+        direct_prompt = " ".join(positional_args)
 
     # Load configuration
     cfg = Config.load(Path.cwd())
@@ -132,14 +149,52 @@ async def run_interactive_session(agent: Code68Agent, ui: TerminalUI, cfg: Confi
                     continue
 
                 elif cmd == "/diff":
-                    diff_res = agent.tool_registry._handlers["git_diff"]()
+                    diff_res = await agent.tool_registry.execute("git_diff", {})
                     ui.renderer.render_markdown(diff_res)
                     continue
 
                 elif cmd == "/undo":
-                    ui.print("[yellow]Reverting unstaged changes...[/yellow]")
-                    run_res = await agent.tool_registry.execute("run_command", {"command": "git checkout ."})
-                    ui.print(run_res)
+                    confirmed = ui.components.confirm(
+                        "Are you sure you want to revert uncommitted changes? (git checkout .)",
+                        default=False,
+                    )
+                    if confirmed:
+                        ui.print("[yellow]Reverting unstaged changes...[/yellow]")
+                        run_res = await agent.tool_registry.execute("run_command", {"command": "git checkout ."})
+                        ui.print(run_res)
+                    else:
+                        ui.print("[dim]Undo cancelled.[/dim]")
+                    continue
+
+                elif cmd == "/sessions":
+                    sessions = agent.session_manager.list_sessions()
+                    if not sessions:
+                        ui.print("[dim]No saved sessions found in this workspace.[/dim]")
+                    else:
+                        table = Table(title="Saved Sessions", border_style="cyan")
+                        table.add_column("Session ID", style="bold green")
+                        table.add_column("Created At")
+                        table.add_column("Messages")
+                        for s in sessions:
+                            table.add_row(s["session_id"], s.get("created_at", "N/A"), str(s["message_count"]))
+                        ui.print(table)
+                    continue
+
+                elif cmd == "/save":
+                    sid = cmd_parts[1] if len(cmd_parts) > 1 else None
+                    msg = agent.save_session(sid)
+                    ui.renderer.render_success(msg)
+                    continue
+
+                elif cmd == "/resume":
+                    if len(cmd_parts) < 2:
+                        ui.renderer.render_warning("Usage: /resume <session_id>")
+                    else:
+                        sid = cmd_parts[1]
+                        if agent.load_session(sid):
+                            ui.renderer.render_success(f"Resumed session '{sid}'.")
+                        else:
+                            ui.renderer.render_error(f"Session '{sid}' not found.")
                     continue
 
                 else:
@@ -167,6 +222,9 @@ def _show_help(ui: TerminalUI) -> None:
     table.add_row("/status", "Show connection, workspace, and model details")
     table.add_row("/diff", "Show git diff of uncommitted changes")
     table.add_row("/undo", "Revert uncommitted file changes")
+    table.add_row("/sessions", "List saved conversation sessions")
+    table.add_row("/save [id]", "Save current conversation session")
+    table.add_row("/resume <id>", "Resume a previously saved session")
     table.add_row("/exit", "Exit Code68")
     ui.print(table)
 
@@ -227,7 +285,7 @@ def doctor() -> None:
     cfg = Config.load(Path.cwd())
     agent = Code68Agent(workspace_root=Path.cwd(), config=cfg, ui=ui)
     try:
-        health = asyncio.run(agent.check_connection())
+        asyncio.run(agent.check_connection())
         table.add_row(
             "Cloud LLM Endpoint",
             "[green]CONNECTED[/green]",

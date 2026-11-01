@@ -7,10 +7,11 @@ import json
 import logging
 import re
 from typing import Callable, Optional
+
 from code68.core.conversation import Conversation
 from code68.core.state import LoopDetector
 from code68.llm.base import BaseLLMProvider, LLMError
-from code68.llm.models import Message, Role, ToolCall, FunctionCall
+from code68.llm.models import FunctionCall, Message, ToolCall
 from code68.tools.registry import ToolRegistry
 from code68.ui.renderer import TerminalRenderer
 
@@ -135,21 +136,51 @@ class AgentLoop:
         return final_answer
 
     def _parse_fallback_tool_calls(self, text: str) -> Optional[list[ToolCall]]:
-        """Fallback parser if model returns tool invocations inside markdown code blocks."""
-        pattern = r"```(?:json)?\s*\{\s*\"tool\"\s*:\s*\"([^\"]+)\"\s*,\s*\"arguments\"\s*:\s*(\{.*?\})\s*\}\s*```"
-        matches = list(re.finditer(pattern, text, re.DOTALL))
-        if not matches:
-            return None
+        """Fallback parser if model returns tool invocations inside XML tags or markdown blocks."""
+        calls: list[ToolCall] = []
+        call_idx = 1
 
-        calls = []
-        for i, match in enumerate(matches):
-            tool_name = match.group(1)
-            raw_args = match.group(2)
-            calls.append(
-                ToolCall(
-                    id=f"fallback_call_{i+1}",
-                    type="function",
-                    function=FunctionCall(name=tool_name, arguments=raw_args),
-                )
-            )
+        # 1. Qwen / XML format: <tool_call>\n{...}\n</tool_call>
+        xml_matches = re.findall(r"<tool_call>\s*(\{.*?\})\s*</tool_call>", text, re.DOTALL)
+        for raw_json in xml_matches:
+            try:
+                data = json.loads(raw_json)
+                name = data.get("name") or data.get("tool") or data.get("action")
+                args = data.get("arguments", data.get("parameters", {}))
+                args_str = json.dumps(args) if isinstance(args, dict) else str(args)
+                if name and self.tool_registry.has_tool(name):
+                    calls.append(
+                        ToolCall(
+                            id=f"fallback_call_{call_idx}",
+                            type="function",
+                            function=FunctionCall(name=name, arguments=args_str),
+                        )
+                    )
+                    call_idx += 1
+            except Exception:
+                continue
+
+        if calls:
+            return calls
+
+        # 2. Markdown codeblock format: ```json\n{...}\n```
+        md_matches = re.findall(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+        for raw_json in md_matches:
+            try:
+                data = json.loads(raw_json)
+                name = data.get("name") or data.get("tool") or data.get("action")
+                args = data.get("arguments", data.get("parameters", {}))
+                args_str = json.dumps(args) if isinstance(args, dict) else str(args)
+                if name and self.tool_registry.has_tool(name):
+                    calls.append(
+                        ToolCall(
+                            id=f"fallback_call_{call_idx}",
+                            type="function",
+                            function=FunctionCall(name=name, arguments=args_str),
+                        )
+                    )
+                    call_idx += 1
+            except Exception:
+                continue
+
         return calls if calls else None

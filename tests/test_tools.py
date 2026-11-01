@@ -1,7 +1,9 @@
 """Tests for Code68 tools."""
 
 import sys
+
 import pytest
+
 from code68.tools.filesystem import FilesystemTools
 from code68.tools.search import SearchTools
 from code68.tools.terminal import TerminalTools
@@ -40,6 +42,23 @@ def test_filesystem_edit_file_and_diff(temp_workspace):
     # Check updated content
     content = (temp_workspace / sample_path).read_text(encoding="utf-8")
     assert "return 'code68'" in content
+
+
+def test_filesystem_edit_crlf_lf_handling(temp_workspace):
+    fs = FilesystemTools(temp_workspace)
+    crlf_file = temp_workspace / "crlf.py"
+    # Write a file with explicit Windows CRLF line endings
+    crlf_file.write_bytes(b"def foo():\r\n    x = 1\r\n    return x\r\n")
+
+    # LLM requests edit using Unix LF line endings
+    edit_res = fs.edit_file(
+        path="crlf.py",
+        old_text="    x = 1\n    return x",
+        new_text="    x = 42\n    return x",
+    )
+    assert "Successfully edited" in edit_res
+    updated_bytes = crlf_file.read_bytes()
+    assert b"42" in updated_bytes
 
 
 def test_filesystem_edit_not_found(temp_workspace):

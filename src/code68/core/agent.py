@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Dict, Optional
+
 from code68.core.agent_loop import AgentLoop
 from code68.core.context import ContextBuilder
 from code68.core.conversation import Conversation
@@ -98,3 +99,22 @@ class Code68Agent:
         if self.conversation:
             return self.conversation.compact()
         return 0
+
+    def save_session(self, session_id: Optional[str] = None) -> str:
+        """Persist current conversation session to disk."""
+        import uuid
+        if not self.conversation:
+            return "No active conversation to save."
+        sid = session_id or str(uuid.uuid4())[:8]
+        path = self.session_manager.save_session(sid, self.conversation.get_messages())
+        return f"Session saved as '{sid}' ({path.name})"
+
+    def load_session(self, session_id: str) -> bool:
+        """Restore conversation from a saved session file."""
+        messages = self.session_manager.load_session(session_id)
+        if not messages:
+            return False
+        if not self.conversation:
+            self._initialize_conversation()
+        self.conversation.history.messages = messages
+        return True

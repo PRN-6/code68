@@ -7,8 +7,9 @@ import os
 from enum import Enum
 from pathlib import Path
 from typing import Optional
-from pydantic import BaseModel, Field
+
 from dotenv import load_dotenv
+from pydantic import BaseModel, Field
 
 # Load local .env if present
 load_dotenv()

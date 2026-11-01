@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
+
 from code68.indexing.retrieval import ContextRetriever
 from code68.indexing.scanner import CodebaseScanner, ProjectMetadata
 from code68.tools.git import GitTools

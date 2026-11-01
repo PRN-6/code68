@@ -18,6 +18,10 @@ TOOL CALLING:
 - Invoke tools using standard function calls.
 - Inspect tool outputs to determine your next action.
 - When your task is complete or you need user clarification, provide your final response without tool calls.
+- If function calling is not natively supported by your runtime, you may format your tool call using XML tags:
+  <tool_call>
+  {"name": "tool_name", "arguments": {"param": "value"}}
+  </tool_call>
 """
 
 

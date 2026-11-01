@@ -7,7 +7,9 @@ import json
 import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
+
 from code68.llm.models import Message
 
 

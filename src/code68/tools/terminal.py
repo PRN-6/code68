@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import asyncio
-import os
 import subprocess
 from pathlib import Path
-from typing import Optional
+
 from code68.security.sandbox import resolve_safe_path
 from code68.security.validation import is_destructive_command
 
@@ -43,6 +42,7 @@ class TerminalTools:
                             cwd=str(target_cwd),
                             capture_output=True,
                             text=True,
+                            errors="replace",
                             timeout=float(timeout),
                         )
                     except Exception:
@@ -52,6 +52,7 @@ class TerminalTools:
                             cwd=str(target_cwd),
                             capture_output=True,
                             text=True,
+                            errors="replace",
                             timeout=float(timeout),
                         )
                     return res.returncode, res.stdout.strip(), res.stderr.strip(), None

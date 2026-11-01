@@ -3,14 +3,14 @@
 import shutil
 import uuid
 from pathlib import Path
+
 import git
 import pytest
-from code68.llm.models import Message, Role, ToolCall, FunctionCall
+
 from code68.llm.providers import MockLLMProvider
 from code68.security.permissions import SecurityManager
-from code68.storage.config import Config, PermissionLevel
+from code68.storage.config import PermissionLevel
 from code68.tools import build_default_tool_registry
-from code68.tools.registry import ToolRegistry
 
 
 @pytest.fixture

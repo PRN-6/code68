@@ -6,7 +6,9 @@ import asyncio
 import json
 import logging
 from typing import Any, Callable, Dict, List, Optional
+
 import httpx
+
 from code68.llm.base import (
     BaseLLMProvider,
     LLMAuthError,
@@ -16,7 +18,7 @@ from code68.llm.base import (
     LLMTimeoutError,
     ProviderCapabilities,
 )
-from code68.llm.models import Message, Role, ToolCall, FunctionCall
+from code68.llm.models import FunctionCall, Message, Role, ToolCall
 from code68.llm.streaming import StreamAccumulator
 
 logger = logging.getLogger(__name__)
@@ -144,6 +146,37 @@ class OpenAICompatibleProvider(BaseLLMProvider):
                         raise LLMError(
                             f"HTTP {response.status_code} from {endpoint}: {body.decode('utf-8', errors='ignore')}"
                         )
+
+                    content_type = response.headers.get("content-type", "")
+                    if "application/json" in content_type:
+                        # Non-streaming response returned by provider
+                        body = await response.aread()
+                        data = json.loads(body.decode("utf-8", errors="replace"))
+                        choices = data.get("choices", [])
+                        if choices:
+                            msg_dict = choices[0].get("message", {})
+                            content = msg_dict.get("content")
+                            if on_token and content:
+                                on_token(content)
+                            tool_calls = None
+                            if "tool_calls" in msg_dict:
+                                tool_calls = [
+                                    ToolCall(
+                                        id=tc.get("id", f"call_{i}"),
+                                        type=tc.get("type", "function"),
+                                        function=FunctionCall(
+                                            name=tc.get("function", {}).get("name", ""),
+                                            arguments=tc.get("function", {}).get("arguments", "{}"),
+                                        ),
+                                    )
+                                    for i, tc in enumerate(msg_dict["tool_calls"])
+                                ]
+                            return Message(
+                                role=Role.ASSISTANT,
+                                content=content,
+                                tool_calls=tool_calls,
+                            )
+                        return Message(role=Role.ASSISTANT, content="")
 
                     async for line in response.aiter_lines():
                         line = line.strip()

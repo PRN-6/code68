@@ -9,7 +9,7 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
-from typing import List, Optional
+
 from code68.security.sandbox import resolve_safe_path
 
 
@@ -63,7 +63,7 @@ class SearchTools:
         cmd.extend(["--", query, str(target)])
 
         try:
-            res = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+            res = subprocess.run(cmd, capture_output=True, text=True, errors="replace", timeout=15)
             output = res.stdout.strip()
             if not output:
                 return f"No matches found for pattern '{query}'."

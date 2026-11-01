@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Optional
+
 from code68.llm.base import BaseLLMProvider
 from code68.llm.providers import MockLLMProvider, OpenAICompatibleProvider
 from code68.storage.config import Config

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import List, Optional
+
 from code68.llm.models import Message, Role, ToolCall
 from code68.storage.history import ConversationHistory
 

@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List
+
 from pydantic import BaseModel, Field
+
 from code68.indexing.ignore import IgnoreFilter
 
 
@@ -127,7 +129,7 @@ class CodebaseScanner:
 
         meta.total_files = scanned_files
         meta.language_breakdown = ext_counts
-        meta.detected_languages = sorted(ext_counts.keys(), key=lambda l: ext_counts[l], reverse=True)
+        meta.detected_languages = sorted(ext_counts.keys(), key=lambda lang: ext_counts[lang], reverse=True)
 
         # Infer project type
         if "Python" in ext_counts and (

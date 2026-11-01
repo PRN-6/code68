@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional
+
 import git
-from git.exc import GitCommandError, InvalidGitRepositoryError
+from git.exc import InvalidGitRepositoryError
 
 
 class GitTools:

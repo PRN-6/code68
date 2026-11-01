@@ -8,6 +8,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
+
 from code68.security.permissions import ActionCategory, SecurityManager
 from code68.security.validation import mask_secrets, truncate_output
 from code68.tools.schemas import ToolDefinition
@@ -55,6 +56,14 @@ class ToolRegistry:
     def get_tool_definitions(self) -> List[ToolDefinition]:
         """Return all registered tool definitions."""
         return list(self._tools.values())
+
+    def get_tool_names(self) -> List[str]:
+        """Return list of all registered tool names."""
+        return list(self._tools.keys())
+
+    def has_tool(self, name: str) -> bool:
+        """Check if a tool is registered."""
+        return name in self._tools
 
     def get_openai_tools(self) -> List[Dict[str, Any]]:
         """Return tool definitions in OpenAI format."""

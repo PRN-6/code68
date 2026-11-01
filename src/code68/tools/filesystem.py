@@ -5,11 +5,9 @@ from __future__ import annotations
 import difflib
 import os
 from pathlib import Path
-from typing import Optional
-from code68.security.permissions import ActionCategory
+
 from code68.security.sandbox import resolve_safe_path
 from code68.security.validation import check_prompt_injection
-from code68.tools.schemas import ToolParameter
 
 
 class FilesystemTools:
@@ -72,6 +70,21 @@ class FilesystemTools:
 
             with open(target, "r", encoding="utf-8") as f:
                 content = f.read()
+
+            # Handle CRLF vs LF line ending discrepancies (common on Windows)
+            if old_text not in content:
+                # Try matching with CRLF if file uses CRLF
+                if "\r\n" in content and "\r\n" not in old_text:
+                    old_text_crlf = old_text.replace("\n", "\r\n")
+                    if old_text_crlf in content:
+                        old_text = old_text_crlf
+                        new_text = new_text.replace("\r\n", "\n").replace("\n", "\r\n")
+                # Try matching with LF if file uses LF
+                elif "\r\n" not in content and "\r\n" in old_text:
+                    old_text_lf = old_text.replace("\r\n", "\n")
+                    if old_text_lf in content:
+                        old_text = old_text_lf
+                        new_text = new_text.replace("\r\n", "\n")
 
             if old_text not in content:
                 # Provide a helpful hint

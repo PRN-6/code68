@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import json
 from typing import Any, Callable, Dict, List, Optional
+
 from code68.llm.models import FunctionCall, Message, Role, ToolCall
 
 

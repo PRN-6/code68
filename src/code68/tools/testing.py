@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-import os
-import shutil
+import subprocess
 import sys
 from pathlib import Path
 from typing import Optional
@@ -79,6 +78,7 @@ class TestingTools:
                     cwd=str(self.workspace_root),
                     capture_output=True,
                     text=True,
+                    errors="replace",
                     timeout=float(timeout),
                 )
                 return res.returncode, res.stdout.strip(), res.stderr.strip(), None

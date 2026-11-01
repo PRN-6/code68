@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import Any, Callable, Dict, Optional
+
 from code68.storage.config import PermissionLevel
 
 

@@ -1,6 +1,7 @@
 """CLI tests for Code68."""
 
 from typer.testing import CliRunner
+
 from code68 import __version__
 from code68.cli import app
 
@@ -31,4 +32,12 @@ def test_cli_doctor():
     assert result.exit_code == 0
     assert "Python Runtime" in result.stdout
     assert "Git Version Control" in result.stdout
+
+
+def test_cli_init(temp_workspace, monkeypatch):
+    monkeypatch.chdir(temp_workspace)
+    result = runner.invoke(app, ["init"])
+    assert result.exit_code == 0
+    assert "Initialized Code68" in result.stdout
+    assert (temp_workspace / ".code68" / "config.json").exists()
 

@@ -1,9 +1,10 @@
 """End-to-end tests for Code68 Agent loop, tool execution, and session management."""
 
 import json
+
 import pytest
+
 from code68.core.agent import Code68Agent
-from code68.core.agent_loop import AgentLoop
 from code68.core.conversation import Conversation
 from code68.llm.models import FunctionCall, Message, Role, ToolCall
 from code68.llm.providers import MockLLMProvider
@@ -127,4 +128,73 @@ def test_session_manager(temp_workspace):
     sessions = sm.list_sessions()
     assert len(sessions) >= 1
     assert sessions[0]["session_id"] == "test_sess"
+
+
+@pytest.mark.asyncio
+async def test_agent_fallback_tool_calling_xml(temp_workspace):
+    """Test that models outputting <tool_call> tags (like Qwen2.5-Coder) are parsed and executed."""
+    mock_llm = MockLLMProvider()
+
+    # Turn 1: Model outputs tool call inside <tool_call> XML tags instead of native tool_calls
+    xml_content = (
+        "I need to read sample.py.\n"
+        "<tool_call>\n"
+        '{"name": "read_file", "arguments": {"path": "sample.py"}}\n'
+        "</tool_call>"
+    )
+    mock_llm.queue_response(Message(role=Role.ASSISTANT, content=xml_content))
+
+    # Turn 2: Model finishes
+    mock_llm.queue_response(Message(role=Role.ASSISTANT, content="File inspection complete."))
+
+    cfg = Config(permission_level=PermissionLevel.FULL_AUTO)
+    agent = Code68Agent(
+        workspace_root=temp_workspace,
+        config=cfg,
+        mock_provider=mock_llm,
+    )
+
+    result = await agent.execute("Read sample", stream=False)
+    assert "File inspection complete." in result
+
+
+@pytest.mark.asyncio
+async def test_agent_fallback_tool_calling_markdown(temp_workspace):
+    """Test that models outputting markdown ```json tool calls are parsed and executed."""
+    mock_llm = MockLLMProvider()
+
+    md_content = (
+        "Let me run this:\n"
+        "```json\n"
+        '{"tool": "read_file", "parameters": {"path": "sample.py"}}\n'
+        "```"
+    )
+    mock_llm.queue_response(Message(role=Role.ASSISTANT, content=md_content))
+    mock_llm.queue_response(Message(role=Role.ASSISTANT, content="Done reading."))
+
+    cfg = Config(permission_level=PermissionLevel.FULL_AUTO)
+    agent = Code68Agent(
+        workspace_root=temp_workspace,
+        config=cfg,
+        mock_provider=mock_llm,
+    )
+
+    result = await agent.execute("Read sample", stream=False)
+    assert "Done reading." in result
+
+
+def test_agent_session_save_and_load(temp_workspace):
+    cfg = Config(permission_level=PermissionLevel.FULL_AUTO)
+    agent = Code68Agent(workspace_root=temp_workspace, config=cfg)
+    agent.conversation.add_user_message("Test message 123")
+
+    msg = agent.save_session("custom_sess")
+    assert "custom_sess" in msg
+
+    agent.clear()
+    assert len(agent.conversation.get_messages()) == 1  # Only system prompt
+
+    success = agent.load_session("custom_sess")
+    assert success is True
+    assert any("Test message 123" in (m.content or "") for m in agent.conversation.get_messages())
 
