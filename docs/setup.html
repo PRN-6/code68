@@ -24,11 +24,11 @@
         extend: {
           colors: {
             brand: {
-              emerald: '#00f59b',
-              emeraldHover: '#00df88',
-              emeraldDim: 'rgba(0, 245, 155, 0.12)',
-              dark: '#060708',
-              surface: '#0b0d0e',
+              emerald: 'var(--brand-accent)',
+              emeraldHover: 'var(--brand-accent-hover)',
+              emeraldDim: 'var(--brand-accent-dim)',
+              dark: '#070809',
+              surface: '#0d0f12',
               border: '#1b1f24',
               muted: '#7d8590'
             }
@@ -44,26 +44,73 @@
   </script>
 
   <style>
+    /* Sleek Monochrome / Titanium Theme (Default) */
+    :root, [data-theme="titanium"] {
+      --brand-accent: #f1f5f9;
+      --brand-accent-hover: #ffffff;
+      --brand-accent-dim: rgba(241, 245, 249, 0.08);
+      --brand-accent-border: rgba(241, 245, 249, 0.25);
+      --brand-accent-glow: rgba(255, 255, 255, 0.22);
+      --brand-dot-color: #f8fafc;
+    }
+
+    [data-theme="cyan"] {
+      --brand-accent: #00f0ff;
+      --brand-accent-hover: #38bdf8;
+      --brand-accent-dim: rgba(0, 240, 255, 0.12);
+      --brand-accent-border: rgba(0, 240, 255, 0.3);
+      --brand-accent-glow: rgba(0, 240, 255, 0.25);
+      --brand-dot-color: #00f0ff;
+    }
+
+    [data-theme="violet"] {
+      --brand-accent: #c084fc;
+      --brand-accent-hover: #e879f9;
+      --brand-accent-dim: rgba(192, 132, 252, 0.12);
+      --brand-accent-border: rgba(192, 132, 252, 0.3);
+      --brand-accent-glow: rgba(192, 132, 252, 0.25);
+      --brand-dot-color: #c084fc;
+    }
+
+    [data-theme="emerald"] {
+      --brand-accent: #00f59b;
+      --brand-accent-hover: #00df88;
+      --brand-accent-dim: rgba(0, 245, 155, 0.12);
+      --brand-accent-border: rgba(0, 245, 155, 0.3);
+      --brand-accent-glow: rgba(0, 245, 155, 0.25);
+      --brand-dot-color: #00f59b;
+    }
+
+    [data-theme="amber"] {
+      --brand-accent: #fbbf24;
+      --brand-accent-hover: #f59e0b;
+      --brand-accent-dim: rgba(251, 191, 36, 0.12);
+      --brand-accent-border: rgba(251, 191, 36, 0.3);
+      --brand-accent-glow: rgba(251, 191, 36, 0.25);
+      --brand-dot-color: #fbbf24;
+    }
+
     body {
-      background-color: #060708;
+      background-color: #070809;
       background-image: 
         linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
       background-size: 40px 40px;
       font-family: 'Inter', sans-serif;
-      color: #e6edf3;
+      color: #e2e8f0;
     }
     .pulse-dot {
       animation: pulse-dot 2s infinite ease-in-out;
+      background-color: var(--brand-dot-color);
     }
     @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 6px #00f59b); }
-      50% { opacity: 0.6; transform: scale(0.9); filter: drop-shadow(0 0 2px #00f59b); }
+      0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 6px var(--brand-dot-color)); }
+      50% { opacity: 0.6; transform: scale(0.9); filter: drop-shadow(0 0 2px var(--brand-dot-color)); }
     }
     ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #060708; }
+    ::-webkit-scrollbar-track { background: #070809; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #00f59b; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--brand-accent); }
   </style>
 </head>
 <body class="min-h-screen text-slate-200 selection:bg-brand-emerald selection:text-black">
@@ -93,6 +140,16 @@
       </nav>
 
       <div class="flex items-center space-x-3 font-mono text-xs">
+        <!-- Theme Switcher -->
+        <div class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md border border-white/10 bg-white/[0.03]">
+          <span class="text-[10px] text-slate-500 uppercase tracking-wider mr-0.5 hidden sm:inline">Theme</span>
+          <button onclick="setTheme('titanium')" id="btn-theme-titanium" title="Sleek Titanium (Default)" class="w-3.5 h-3.5 rounded-full bg-slate-200 hover:scale-125 transition-transform border border-white/50"></button>
+          <button onclick="setTheme('cyan')" id="btn-theme-cyan" title="Electric Cyan" class="w-3.5 h-3.5 rounded-full bg-[#00f0ff] hover:scale-125 transition-transform"></button>
+          <button onclick="setTheme('violet')" id="btn-theme-violet" title="Cyber Violet" class="w-3.5 h-3.5 rounded-full bg-[#c084fc] hover:scale-125 transition-transform"></button>
+          <button onclick="setTheme('emerald')" id="btn-theme-emerald" title="Cyber Emerald" class="w-3.5 h-3.5 rounded-full bg-[#00f59b] hover:scale-125 transition-transform"></button>
+          <button onclick="setTheme('amber')" id="btn-theme-amber" title="Retro Amber" class="w-3.5 h-3.5 rounded-full bg-[#fbbf24] hover:scale-125 transition-transform"></button>
+        </div>
+
         <a href="https://github.com/PRN-6/code68" target="_blank" 
            class="flex items-center space-x-2 px-3.5 py-1.5 rounded-md border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] text-white transition-all">
           <i data-lucide="github" class="w-4 h-4"></i>
@@ -652,6 +709,29 @@
 
   <script>
     lucide.createIcons();
+
+    // Theme Switcher Logic
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('code68_theme', theme);
+      
+      const themes = ['titanium', 'cyan', 'violet', 'emerald', 'amber'];
+      themes.forEach(t => {
+        const btn = document.getElementById(`btn-theme-${t}`);
+        if (btn) {
+          if (t === theme) {
+            btn.classList.add('ring-2', 'ring-white', 'scale-125');
+          } else {
+            btn.classList.remove('ring-2', 'ring-white', 'scale-125');
+          }
+        }
+      });
+    }
+
+    // Initialize Theme (Default: titanium)
+    const activeTheme = localStorage.getItem('code68_theme') || 'titanium';
+    setTheme(activeTheme);
+
     function copyCode(btn, text) {
       navigator.clipboard.writeText(text).then(() => {
         const orig = btn.textContent;
