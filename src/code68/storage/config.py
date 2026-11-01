@@ -84,23 +84,23 @@ class Config(BaseModel):
         config_dict = {}
 
         # 1. Global config file
-        global_path = cls.get_config_dir() / "config.json"
-        if global_path.is_file():
-            try:
+        try:
+            global_path = cls.get_config_dir() / "config.json"
+            if global_path.is_file():
                 with open(global_path, "r", encoding="utf-8") as f:
                     config_dict.update(json.load(f))
-            except Exception:
-                pass
+        except (OSError, PermissionError, Exception):
+            pass
 
         # 2. Workspace config file
         if workspace_root:
-            ws_path = workspace_root / ".code68" / "config.json"
-            if ws_path.is_file():
-                try:
+            try:
+                ws_path = workspace_root / ".code68" / "config.json"
+                if ws_path.is_file():
                     with open(ws_path, "r", encoding="utf-8") as f:
                         config_dict.update(json.load(f))
-                except Exception:
-                    pass
+            except (OSError, PermissionError, Exception):
+                pass
 
         # Pydantic will fill in remaining from env vars and defaults
         return cls(**config_dict)
