@@ -145,6 +145,12 @@ def run_setup_wizard(ui: TerminalUI, cfg: Config) -> bool:
                 cfg.api_key = key
             cfg.model = "Qwen/Qwen2.5-Coder-7B-Instruct"
     elif choice == "4":
+        ui.print(f"\nCurrent Kaggle Notebook: [dim]{cfg.kaggle_notebook_url}[/dim]")
+        custom_url = ui.components.ask_input("Press Enter to use this, or paste your own Kaggle notebook URL: ").strip()
+        if custom_url:
+            cfg.kaggle_notebook_url = custom_url
+            ui.renderer.render_success(f"Updated Kaggle notebook URL to: {cfg.kaggle_notebook_url}")
+
         ui.print(f"\n[cyan]Opening Kaggle notebook in default browser:[/cyan]")
         ui.print(f"[bold underline]{cfg.kaggle_notebook_url}[/bold underline]\n")
         try:
