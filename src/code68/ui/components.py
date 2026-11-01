@@ -34,6 +34,13 @@ class UIComponents:
         except (KeyboardInterrupt, EOFError):
             return False
 
+    def confirm(self, prompt: str, default: bool = False) -> bool:
+        """Prompt user for a simple yes/no confirmation."""
+        try:
+            return Confirm.ask(f"[bold cyan]{prompt}[/bold cyan]", default=default)
+        except (KeyboardInterrupt, EOFError):
+            return default
+
     def ask_input(self, prompt: str = "code68> ") -> str:
         """Prompt user for input."""
         try:
