@@ -3,7 +3,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-27%20passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-32%20passed-brightgreen.svg)]()
 
 Code68 is an independent, modular open-source terminal AI coding agent inspired by Claude Code.
 
@@ -71,43 +71,81 @@ LOCAL DEVELOPER MACHINE      ┌────────────────
 
 ## 📦 Installation
 
-### 1. Prerequisites
-- Python 3.11+
-- Git
+### Method 1: Install Directly via pip (Quickest for Users ⚡)
 
-### 2. Setup Local Agent
+Any developer with Python 3.11+ can install Code68 as a system-wide or user tool:
+
+```bash
+# Using pip
+pip install git+https://github.com/PRN-6/code68.git
+
+# Or isolated using pipx (recommended for CLI apps)
+pipx install git+https://github.com/PRN-6/code68.git
+```
+
+Now `code68` is available everywhere in your terminal:
+```bash
+code68 --version
+```
+
+### Method 2: Clone for Local Development / Contributing
+
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/code68.git
+git clone https://github.com/PRN-6/code68.git
 cd code68
 
 # Create and activate virtual environment
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .\.venv\Scripts\activate
 
-# Install dependencies and Code68
-pip install -r requirements.txt
-pip install -e .
+# Install in editable mode with development dependencies
+pip install -e ".[dev]"
 ```
 
 ---
 
-## ☁️ Cloud Inference Server (Kaggle Setup)
+## ☁️ Setting Up an LLM Brain
 
-Run the remote model on Kaggle using 2x NVIDIA Tesla T4 GPUs:
+Code68 needs an LLM endpoint. Users can choose **any** of the following options:
 
-1. Open a new Kaggle notebook: [https://www.kaggle.com/code](https://www.kaggle.com/code)
-2. Set accelerator: **GPU T4 x 2**
-3. Upload `server/kaggle_server.py` or paste into a cell.
-4. Install requirements:
-   ```bash
-   !pip install -q fastapi uvicorn "transformers>=4.40.0" accelerate bitsandbytes pycloudflared
-   ```
-5. Run the server:
-   ```bash
+### Option A: Free Cloud GPU via Kaggle (Zero Local VRAM)
+
+1. Open a new Kaggle notebook: [kaggle.com/code](https://www.kaggle.com/code)
+2. Settings (right panel): Accelerator = **GPU T4 x 2**, Internet = **ON**
+3. Paste and run this single cell:
+   ```python
+   !git clone https://github.com/PRN-6/code68.git
+   %cd /kaggle/working/code68
+   !pip install -q -r server/requirements-server.txt
    !python server/kaggle_server.py
    ```
-6. Copy the generated public tunnel URL (e.g. `https://xxxx.trycloudflare.com/v1`).
+4. Copy the printed tunnel URL into your `.env` file:
+   ```env
+   CODE68_BASE_URL=https://random-name.trycloudflare.com/v1
+   CODE68_API_KEY=code68-secret-key
+   ```
+
+### Option B: Local Ollama (100% Offline)
+
+If a user already has [Ollama](https://ollama.com/) installed locally:
+```bash
+ollama run qwen2.5-coder:7b
+```
+Then configure Code68:
+```env
+CODE68_BASE_URL=http://localhost:11434/v1
+CODE68_MODEL=qwen2.5-coder:7b
+```
+
+### Option C: Cloud API (OpenRouter, DeepSeek, Groq, OpenAI)
+
+Code68 works with any OpenAI-compatible provider:
+```env
+CODE68_BASE_URL=https://openrouter.ai/api/v1
+CODE68_API_KEY=your-openrouter-key
+CODE68_MODEL=qwen/qwen-2.5-coder-32b-instruct
+```
 
 ---
 
