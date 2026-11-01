@@ -8,7 +8,10 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.syntax import Syntax
+from rich.table import Table
 from rich.text import Text
+
+from code68 import __version__
 
 
 class TerminalRenderer:
@@ -24,29 +27,49 @@ class TerminalRenderer:
         connection_status: str,
         workspace: str,
     ) -> None:
-        """Render the Code68 header banner."""
+        """Render the Code68 ASCII art header banner."""
+        art_lines = [
+            r"   ______ ____  ____   ______     ______  ____  ",
+            r"  / ____// __ \/ __ \ / ____/    / ____/ ( __ ) ",
+            r" / /    / / / / / / // __/      / __ \  / __  | ",
+            r"/ /___ / /_/ / /_/ // /___     / /_/ / / /_/ /  ",
+            r"\____/ \____/_____//_____/     \____/  \____/   ",
+        ]
+
         banner_text = Text()
-        banner_text.append("             CODE68             \n", style="bold cyan")
-        banner_text.append("   Autonomous AI Coding Agent   \n\n", style="bold white")
-        banner_text.append("   Cloud Intelligence           \n", style="italic blue")
-        banner_text.append("   Local Execution              ", style="italic green")
+        gradient_colors = ["#38bdf8", "#60a5fa", "#818cf8", "#a78bfa", "#c084fc"]
+        for line, color in zip(art_lines, gradient_colors):
+            banner_text.append(line + "\n", style=f"bold {color}")
+
+        banner_text.append("\n          Autonomous AI Coding Agent\n", style="bold white")
+        banner_text.append("     Cloud Intelligence + Local Execution\n", style="italic cyan")
 
         panel = Panel(
             banner_text,
-            title="[bold magenta]v0.1.0[/bold magenta]",
+            title=f"[bold magenta]Code68 v{__version__}[/bold magenta]",
+            subtitle="[dim]https://github.com/PRN-6/code68[/dim]",
             border_style="bright_blue",
-            padding=(1, 2),
+            padding=(1, 3),
+            expand=False,
         )
         self.console.print(panel)
 
-        status_color = "green" if "connect" in connection_status.lower() else "yellow"
-        info_lines = [
-            f"[bold]Model:[/bold] {model}",
-            f"[bold]Provider:[/bold] {provider}",
-            f"[bold]Connection:[/bold] [{status_color}]{connection_status}[/{status_color}]",
-            f"[bold]Workspace:[/bold] {workspace}",
-        ]
-        self.console.print("\n".join(info_lines))
+        grid = Table.grid(padding=(0, 2))
+        grid.add_column(style="bold cyan", justify="right")
+        grid.add_column(style="white")
+        grid.add_column(style="bold cyan", justify="right")
+        grid.add_column(style="white")
+
+        status_style = "green" if "connect" in connection_status.lower() else "yellow"
+        grid.add_row(
+            "Model:",
+            model,
+            "Connection:",
+            f"[{status_style}]{connection_status}[/{status_style}]",
+        )
+        grid.add_row("Provider:", provider, "Workspace:", workspace)
+
+        self.console.print(Panel(grid, border_style="dim", expand=False))
         self.console.print()
 
     def render_markdown(self, markdown_text: str) -> None:
