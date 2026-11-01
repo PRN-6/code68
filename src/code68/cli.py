@@ -23,7 +23,7 @@ app = typer.Typer(
 )
 
 
-SUBCOMMANDS = {"doctor", "config", "init", "setup"}
+SUBCOMMANDS = {"doctor", "config", "init", "setup", "kaggle"}
 
 
 @app.callback(invoke_without_command=True)
@@ -90,15 +90,18 @@ def main(
 
 def run_setup_wizard(ui: TerminalUI, cfg: Config) -> bool:
     """Interactive wizard to configure Code68 LLM provider."""
+    import webbrowser
+
     ui.print("\n[bold cyan]Code68 Setup Wizard[/bold cyan]")
     ui.print("Choose how you want to connect Code68 to an AI model:")
     ui.print("  [bold green]1[/bold green] - Ollama (100% Local & Free, runs on your PC)")
     ui.print("  [bold green]2[/bold green] - Cloud API (OpenRouter, Groq, DeepSeek, OpenAI)")
-    ui.print("  [bold green]3[/bold green] - Kaggle Cloud GPU Server (Cloudflare tunnel)")
-    ui.print("  [bold green]4[/bold green] - Local Developer Mock Mode (Offline testing)")
-    ui.print("  [bold green]5[/bold green] - Skip for now\n")
+    ui.print("  [bold green]3[/bold green] - Kaggle Cloud GPU Server (Enter Cloudflare tunnel URL)")
+    ui.print("  [bold green]4[/bold green] - Open Kaggle Notebook in Browser (Launch dual T4 GPU tab)")
+    ui.print("  [bold green]5[/bold green] - Local Developer Mock Mode (Offline testing)")
+    ui.print("  [bold green]6[/bold green] - Skip for now\n")
 
-    choice = (ui.components.ask_input("Enter choice (1-5) [1]: ") or "1").strip()
+    choice = (ui.components.ask_input("Enter choice (1-6) [1]: ") or "1").strip()
 
     if choice == "1":
         cfg.base_url = "http://localhost:11434/v1"
@@ -128,13 +131,38 @@ def run_setup_wizard(ui: TerminalUI, cfg: Config) -> bool:
         if api_key:
             cfg.api_key = api_key
     elif choice == "3":
+        if ui.components.confirm("Open your Kaggle notebook tab in browser first?", default=False):
+            ui.print(f"[cyan]Opening browser:[/cyan] {cfg.kaggle_notebook_url}")
+            try:
+                webbrowser.open(cfg.kaggle_notebook_url)
+            except Exception:
+                pass
         tunnel_url = ui.components.ask_input("Enter Kaggle tunnel URL (e.g. https://xxx.trycloudflare.com/v1): ").strip()
         if tunnel_url:
             cfg.base_url = tunnel_url
             key = ui.components.ask_input("API Key [code68-secret-key]: ").strip()
             if key:
                 cfg.api_key = key
+            cfg.model = "Qwen/Qwen2.5-Coder-7B-Instruct"
     elif choice == "4":
+        ui.print(f"\n[cyan]Opening Kaggle notebook in default browser:[/cyan]")
+        ui.print(f"[bold underline]{cfg.kaggle_notebook_url}[/bold underline]\n")
+        try:
+            webbrowser.open(cfg.kaggle_notebook_url)
+        except Exception as e:
+            ui.renderer.render_warning(f"Could not open browser automatically: {e}")
+        ui.print("1. In Kaggle, ensure Accelerator is [bold cyan]GPU T4 x 2[/bold cyan] and Internet is [bold cyan]ON[/bold cyan].")
+        ui.print("2. Click [bold green]'Run All'[/bold green] (or run the cell).")
+        ui.print("3. In ~2 minutes, copy the [bold green]CODE68 TUNNEL URL[/bold green] and enter it below:\n")
+        tunnel_url = ui.components.ask_input("Enter Kaggle tunnel URL (or press Enter to paste later): ").strip()
+        if tunnel_url:
+            cfg.base_url = tunnel_url
+            cfg.api_key = "code68-secret-key"
+            cfg.model = "Qwen/Qwen2.5-Coder-7B-Instruct"
+        else:
+            ui.print("[yellow]URL skipped. Once your tunnel is running, type '/setup' or run 'code68 setup'.[/yellow]")
+            return False
+    elif choice == "5":
         cfg.base_url = "http://localhost:8000/v1"
         cfg.api_key = "code68-secret-key"
         cfg.model = "mock"
@@ -207,6 +235,17 @@ async def run_interactive_session(agent: Code68Agent, ui: TerminalUI, cfg: Confi
 
                 elif cmd == "/status":
                     await _show_status(agent, ui, cfg)
+                    continue
+
+                elif cmd == "/kaggle":
+                    import webbrowser
+                    ui.print(f"[cyan]Opening Kaggle GPU notebook in browser:[/cyan]")
+                    ui.print(f"[bold underline]{cfg.kaggle_notebook_url}[/bold underline]")
+                    try:
+                        webbrowser.open(cfg.kaggle_notebook_url)
+                    except Exception as e:
+                        ui.renderer.render_warning(f"Could not open browser automatically: {e}")
+                    ui.print("[dim]Once the notebook outputs your tunnel URL, type /setup to paste it.[/dim]")
                     continue
 
                 elif cmd == "/model":
@@ -304,6 +343,7 @@ def _show_help(ui: TerminalUI) -> None:
     table.add_row("/compact", "Compact conversation context to stay within token limits")
     table.add_row("/model [name]", "View or switch active model")
     table.add_row("/setup", "Run setup wizard to connect model/provider")
+    table.add_row("/kaggle", "Open Kaggle GPU notebook in browser")
     table.add_row("/status", "Show connection, workspace, and model details")
     table.add_row("/diff", "Show git diff of uncommitted changes")
     table.add_row("/undo", "Revert uncommitted file changes")
@@ -403,6 +443,7 @@ def config(
     set_model: Optional[str] = typer.Option(None, "--set-model", help="Set default model"),
     set_url: Optional[str] = typer.Option(None, "--set-url", help="Set base URL"),
     set_key: Optional[str] = typer.Option(None, "--set-key", help="Set API key"),
+    set_kaggle_url: Optional[str] = typer.Option(None, "--set-kaggle-url", help="Set Kaggle notebook URL"),
     set_permission: Optional[str] = typer.Option(
         None, "--set-permission", help="Set permission level"
     ),
@@ -423,6 +464,9 @@ def config(
     if set_key:
         cfg.api_key = set_key
         updated = True
+    if set_kaggle_url:
+        cfg.kaggle_notebook_url = set_kaggle_url
+        updated = True
     if set_permission:
         cfg.permission_level = PermissionLevel(set_permission)
         updated = True
@@ -440,3 +484,19 @@ def setup() -> None:
     ui = TerminalUI()
     cfg = Config.load(Path.cwd())
     run_setup_wizard(ui, cfg)
+
+
+@app.command()
+def kaggle(
+    url: Optional[str] = typer.Option(None, "--url", "-u", help="Custom Kaggle notebook URL"),
+) -> None:
+    """Open your Kaggle GPU notebook in the default web browser."""
+    import webbrowser
+    cfg = Config.load(Path.cwd())
+    target_url = url or cfg.kaggle_notebook_url
+    Console().print("[bold cyan]Opening Kaggle GPU notebook in your browser...[/bold cyan]")
+    Console().print(f"[bold underline]{target_url}[/bold underline]")
+    try:
+        webbrowser.open(target_url)
+    except Exception as e:
+        Console().print(f"[red]Failed to open browser:[/red] {e}")

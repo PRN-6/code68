@@ -60,6 +60,11 @@ class Config(BaseModel):
     temperature: float = Field(
         default_factory=lambda: float(os.getenv("CODE68_TEMPERATURE", "0.2"))
     )
+    kaggle_notebook_url: str = Field(
+        default_factory=lambda: os.getenv(
+            "CODE68_KAGGLE_URL", "https://www.kaggle.com/code/prinsonroyal/notebook42b8c0f4df/edit"
+        )
+    )
 
     @classmethod
     def get_config_dir(cls) -> Path:
