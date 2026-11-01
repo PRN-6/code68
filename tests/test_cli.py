@@ -41,3 +41,10 @@ def test_cli_init(temp_workspace, monkeypatch):
     assert "Initialized Code68" in result.stdout
     assert (temp_workspace / ".code68" / "config.json").exists()
 
+
+def test_cli_setup_skip():
+    # Input '5' to skip wizard
+    result = runner.invoke(app, ["setup"], input="5\n")
+    assert result.exit_code == 0
+    assert "Code68 Setup Wizard" in result.stdout
+

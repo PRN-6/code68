@@ -23,7 +23,7 @@ app = typer.Typer(
 )
 
 
-SUBCOMMANDS = {"doctor", "config", "init"}
+SUBCOMMANDS = {"doctor", "config", "init", "setup"}
 
 
 @app.callback(invoke_without_command=True)
@@ -88,6 +88,64 @@ def main(
         asyncio.run(run_interactive_session(agent, ui, cfg))
 
 
+def run_setup_wizard(ui: TerminalUI, cfg: Config) -> bool:
+    """Interactive wizard to configure Code68 LLM provider."""
+    ui.print("\n[bold cyan]Code68 Setup Wizard[/bold cyan]")
+    ui.print("Choose how you want to connect Code68 to an AI model:")
+    ui.print("  [bold green]1[/bold green] - Ollama (100% Local & Free, runs on your PC)")
+    ui.print("  [bold green]2[/bold green] - Cloud API (OpenRouter, Groq, DeepSeek, OpenAI)")
+    ui.print("  [bold green]3[/bold green] - Kaggle Cloud GPU Server (Cloudflare tunnel)")
+    ui.print("  [bold green]4[/bold green] - Local Developer Mock Mode (Offline testing)")
+    ui.print("  [bold green]5[/bold green] - Skip for now\n")
+
+    choice = (ui.components.ask_input("Enter choice (1-5) [1]: ") or "1").strip()
+
+    if choice == "1":
+        cfg.base_url = "http://localhost:11434/v1"
+        cfg.api_key = "ollama"
+        model_name = ui.components.ask_input("Ollama model name [qwen2.5-coder:7b]: ") or "qwen2.5-coder:7b"
+        cfg.model = model_name.strip()
+    elif choice == "2":
+        ui.print("\nPopular Cloud Providers:")
+        ui.print("  a - OpenRouter (supports Qwen, DeepSeek, Claude, Llama)")
+        ui.print("  b - Groq (ultra-fast)")
+        ui.print("  c - DeepSeek")
+        ui.print("  d - Custom OpenAI-compatible URL")
+        p_choice = (ui.components.ask_input("Provider (a/b/c/d) [a]: ") or "a").strip().lower()
+        if p_choice == "b":
+            cfg.base_url = "https://api.groq.com/openai/v1"
+            cfg.model = "qwen-2.5-coder-32b"
+        elif p_choice == "c":
+            cfg.base_url = "https://api.deepseek.com/v1"
+            cfg.model = "deepseek-coder"
+        elif p_choice == "d":
+            cfg.base_url = ui.components.ask_input("Base URL (e.g. https://api.example.com/v1): ").strip()
+            cfg.model = ui.components.ask_input("Model ID: ").strip()
+        else:
+            cfg.base_url = "https://openrouter.ai/api/v1"
+            cfg.model = "qwen/qwen-2.5-coder-32b-instruct"
+        api_key = ui.components.ask_input("Enter API Key: ").strip()
+        if api_key:
+            cfg.api_key = api_key
+    elif choice == "3":
+        tunnel_url = ui.components.ask_input("Enter Kaggle tunnel URL (e.g. https://xxx.trycloudflare.com/v1): ").strip()
+        if tunnel_url:
+            cfg.base_url = tunnel_url
+            key = ui.components.ask_input("API Key [code68-secret-key]: ").strip()
+            if key:
+                cfg.api_key = key
+    elif choice == "4":
+        cfg.base_url = "http://localhost:8000/v1"
+        cfg.api_key = "code68-secret-key"
+        cfg.model = "mock"
+    else:
+        return False
+
+    save_path = cfg.save(global_config=True)
+    ui.renderer.render_success(f"Configuration saved globally to: {save_path}")
+    return True
+
+
 async def run_interactive_session(agent: Code68Agent, ui: TerminalUI, cfg: Config) -> None:
     """Interactive terminal REPL."""
     # Test connection for banner status
@@ -103,6 +161,20 @@ async def run_interactive_session(agent: Code68Agent, ui: TerminalUI, cfg: Confi
         connection_status=status_str,
         workspace=str(Path.cwd()),
     )
+
+    # If endpoint is disconnected/placeholder, prompt user for setup wizard
+    if "disconnect" in status_str.lower() and ("xxxx" in cfg.base_url or "localhost:8000" in cfg.base_url):
+        ui.renderer.render_warning("No active LLM connection found.")
+        if ui.components.confirm("Would you like to run the setup wizard to connect a model?", default=True):
+            if run_setup_wizard(ui, cfg):
+                from code68.llm.client import get_llm_provider
+                agent.config = cfg
+                agent.llm_provider = get_llm_provider(cfg)
+                try:
+                    await agent.check_connection()
+                    ui.renderer.render_success(f"Connected to {cfg.model} at {cfg.base_url}!")
+                except Exception as ex:
+                    ui.renderer.render_warning(f"Could not reach {cfg.base_url} ({ex}). You can reconfigure anytime with /setup.")
 
     while True:
         try:
@@ -197,6 +269,18 @@ async def run_interactive_session(agent: Code68Agent, ui: TerminalUI, cfg: Confi
                             ui.renderer.render_error(f"Session '{sid}' not found.")
                     continue
 
+                elif cmd == "/setup":
+                    if run_setup_wizard(ui, cfg):
+                        from code68.llm.client import get_llm_provider
+                        agent.config = cfg
+                        agent.llm_provider = get_llm_provider(cfg)
+                        try:
+                            await agent.check_connection()
+                            ui.renderer.render_success(f"Connected to {cfg.model} at {cfg.base_url}!")
+                        except Exception as ex:
+                            ui.renderer.render_warning(f"Could not reach {cfg.base_url} ({ex}).")
+                    continue
+
                 else:
                     ui.renderer.render_warning(f"Unknown slash command: {cmd}. Type /help for options.")
                     continue
@@ -219,6 +303,7 @@ def _show_help(ui: TerminalUI) -> None:
     table.add_row("/clear", "Clear conversation history")
     table.add_row("/compact", "Compact conversation context to stay within token limits")
     table.add_row("/model [name]", "View or switch active model")
+    table.add_row("/setup", "Run setup wizard to connect model/provider")
     table.add_row("/status", "Show connection, workspace, and model details")
     table.add_row("/diff", "Show git diff of uncommitted changes")
     table.add_row("/undo", "Revert uncommitted file changes")
@@ -347,3 +432,11 @@ def config(
         typer.echo(f"Configuration saved to {save_path}")
     else:
         typer.echo(cfg.model_dump_json(indent=2))
+
+
+@app.command()
+def setup() -> None:
+    """Run interactive setup wizard to configure LLM provider."""
+    ui = TerminalUI()
+    cfg = Config.load(Path.cwd())
+    run_setup_wizard(ui, cfg)
