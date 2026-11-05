@@ -1,4 +1,4 @@
-"""CLI interface for Code68."""
+___"""CLI interface for Code68."""
 
 from __future__ import annotations
 
@@ -110,18 +110,23 @@ def run_setup_wizard(ui: TerminalUI, cfg: Config) -> bool:
         cfg.model = model_name.strip()
     elif choice == "2":
         ui.print("\nPopular Cloud Providers:")
-        ui.print("  a - OpenRouter (supports Qwen, DeepSeek, Claude, Llama)")
-        ui.print("  b - Groq (ultra-fast)")
-        ui.print("  c - DeepSeek")
-        ui.print("  d - Custom OpenAI-compatible URL")
-        p_choice = (ui.components.ask_input("Provider (a/b/c/d) [a]: ") or "a").strip().lower()
-        if p_choice == "b":
+        ui.print("  a - Google Gemini (100% Free API, fast, 24/7 always-on)")
+        ui.print("  b - OpenRouter (supports Qwen, DeepSeek, Claude, Llama)")
+        ui.print("  c - Groq (ultra-fast)")
+        ui.print("  d - DeepSeek")
+        ui.print("  e - Custom OpenAI-compatible URL")
+        p_choice = (ui.components.ask_input("Provider (a/b/c/d/e) [a]: ") or "a").strip().lower()
+        if p_choice == "a":
+            cfg.base_url = "https://generativelanguage.googleapis.com/v1beta/openai"
+            gemini_model = ui.components.ask_input("Gemini Model [gemini-2.0-flash]: ").strip() or "gemini-2.0-flash"
+            cfg.model = gemini_model
+        elif p_choice == "c":
             cfg.base_url = "https://api.groq.com/openai/v1"
             cfg.model = "qwen-2.5-coder-32b"
-        elif p_choice == "c":
+        elif p_choice == "d":
             cfg.base_url = "https://api.deepseek.com/v1"
             cfg.model = "deepseek-coder"
-        elif p_choice == "d":
+        elif p_choice == "e":
             cfg.base_url = ui.components.ask_input("Base URL (e.g. https://api.example.com/v1): ").strip()
             cfg.model = ui.components.ask_input("Model ID: ").strip()
         else:

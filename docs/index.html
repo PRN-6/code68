@@ -798,13 +798,18 @@
 </div>`,
 
       // Step 2C: OpenRouter / Cloud API
-      `<h3 class="text-white font-bold text-sm mb-2">2C. Cloud APIs (OpenRouter, Groq, DeepSeek)</h3>
-<p class="text-slate-400 mb-3 font-sans text-xs">Connect to high-speed cloud models using your existing API key:</p>
+      `<h3 class="text-white font-bold text-sm mb-2">2C. Cloud APIs (Google Gemini, OpenRouter, Groq)</h3>
+<p class="text-slate-400 mb-2 font-sans text-xs"><b>Google Gemini (100% Free API via Google AI Studio &mdash; 24/7):</b></p>
+<div class="p-3 bg-black/60 rounded border border-white/10 mb-3 flex items-center justify-between">
+  <code>code68 config --global --set-url "https://generativelanguage.googleapis.com/v1beta/openai" --set-key "AIzaSy..." --set-model "gemini-2.0-flash"</code>
+  <button onclick="copyCommand('code68 config --global --set-url \\'https://generativelanguage.googleapis.com/v1beta/openai\\' --set-model \\'gemini-2.0-flash\\'')" class="text-slate-400 hover:text-brand-emerald">copy</button>
+</div>
+<p class="text-slate-400 mb-2 font-sans text-xs">Or OpenRouter (supports Qwen, DeepSeek, Claude):</p>
 <div class="p-3 bg-black/60 rounded border border-white/10 mb-2 flex items-center justify-between">
   <code>code68 config --global --set-url "https://openrouter.ai/api/v1" --set-key "sk-or-v1-..." --set-model "qwen/qwen-2.5-coder-32b-instruct"</code>
   <button onclick="copyCommand('code68 config --global --set-url \\'https://openrouter.ai/api/v1\\' --set-model \\'qwen/qwen-2.5-coder-32b-instruct\\'')" class="text-slate-400 hover:text-brand-emerald">copy</button>
 </div>
-<p class="text-slate-500 font-sans text-[11px] mt-2">Compatible with Groq, DeepSeek, Together, vLLM, and any OpenAI-compatible provider.</p>`
+<p class="text-slate-500 font-sans text-[11px] mt-2">Compatible with Google Gemini, Groq, DeepSeek, Together, vLLM, and any OpenAI-compatible provider.</p>`
     ];
 
     function switchBackendTab(idx) {
