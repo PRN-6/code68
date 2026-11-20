@@ -1,4 +1,4 @@
-___"""CLI interface for Code68."""
+"""CLI interface for Code68."""
 
 from __future__ import annotations
 
